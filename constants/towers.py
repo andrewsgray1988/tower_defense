@@ -1,0 +1,1 @@
+MIN_ATTACK_SPEED = 0.1
