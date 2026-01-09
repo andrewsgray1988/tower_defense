@@ -1,0 +1,12 @@
+{
+  "Training Center": {
+    "max": 1,
+    "reuse_list": [],
+    "default_health": 10.0,
+    "default_armor": 1.0,
+    "default_cost": 10.0,
+    "default_upgrade_cost": 10.0,
+    "default_health_multiplier": 0.5,
+    "default_upgrade_cost_multiplier": 1.5
+  }
+}

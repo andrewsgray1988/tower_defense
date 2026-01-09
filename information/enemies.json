@@ -1,0 +1,13 @@
+{
+  "Skeleton": {
+    "name": "Skeleton",
+    "default_health": 10.0,
+    "default_armor": 1.0,
+    "default_damage": 1.0,
+    "default_essence": 0.01,
+    "default_range": 1,
+    "default_armor_pierce": 0.0,
+    "default_attack_speed": 1.0,
+    "default_move_speed": 1.0
+  }
+}
