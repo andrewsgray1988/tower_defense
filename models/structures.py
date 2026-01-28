@@ -1,5 +1,4 @@
-import time
-import math
+
 
 from collections import deque
 from constants import (
@@ -7,9 +6,6 @@ from constants import (
     SETTINGS,
     UPGRADES
 )
-from models.enemies import Enemy
-
-MIN_ATTACK_SPEED = 0.1
 
 class Structure:
     def __init__(self, key, x, y):

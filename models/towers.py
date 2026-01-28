@@ -7,7 +7,6 @@ from constants import (
     SETTINGS,
     UPGRADES
 )
-from models.enemies import Enemy
 
 MIN_ATTACK_SPEED = 0.1
 
@@ -96,12 +95,14 @@ class Tower:
         min_distance = float('inf')
 
         for enemy in enemies:
-            if not isinstance(enemy, Enemy):
+            if not hasattr(enemy, "x") or not hasattr(enemy, "take_damage"):
                 continue
+
             dist = self.distance_to(enemy)
             if dist <= self.range and dist < min_distance:
                 closest = enemy
                 min_distance = dist
+
         return closest
 
     #Attack trigger
@@ -113,3 +114,11 @@ class Tower:
         if target:
             self.deal_damage(target)
             self._last_attack = now
+
+class Sword(Tower):
+    def __init__(self, x, y):
+        super().__init__("Sword", x, y)
+
+class Archer(Tower):
+    def __init__(self, x, y):
+        super().__init__("archer", x, y)

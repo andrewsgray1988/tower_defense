@@ -1,5 +1,8 @@
 {
-  "Wave": 1,
-  "Gold": 0,
-  "Essence": 0
+    "Wave": 0,
+    "Scrap": 0,
+    "Essence": 0,
+    "Max Gold": 10,
+    "Current Gold": 10,
+    "Stolen Gold": 0
 }
