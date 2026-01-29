@@ -10,6 +10,6 @@
         "default_range": 1,
         "default_armor_pierce": 0.0,
         "default_attack_speed": 1.0,
-        "default_move_speed": 2.0
+        "default_move_speed": 1.0
     }
 }

@@ -34,6 +34,7 @@ class Enemy:
         self._move_start_time = 0
         self.state = AdventurerState.GOING_TO_GOLD
         self.carrying_gold = False
+        self._gold_dropped = False
 
     def set_stats(self):
         enemy_data = ENEMIES[self._key]
@@ -193,6 +194,19 @@ class Enemy:
         else:
             self.x += dx / distance * move_distance
             self.y += dy / distance * move_distance
+
+    def get_drop_tile(self):
+        if self.path_index < 0:
+            return tuple(self.path[0])
+        if self.path_index >= len(self.path):
+            return tuple(self.path[-1])
+        target_tile = tuple(self.path[self.path_index])
+        if list(target_tile) == self.spawn:
+            prev_index = self.path_index - self._path_direction
+            if 0 <= prev_index < len(self.path):
+                return tuple(self.path[prev_index])
+
+        return target_tile
 
     def path_end(self):
         self.path.insert(0, self.spawn)
