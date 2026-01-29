@@ -26,3 +26,12 @@ class Game:
     def draw(self, screen):
         for enemy in self.enemies:
             enemy.draw(screen)
+
+    #Debug Features
+    def kill_earliest_enemy(self):
+        if not self.enemies:
+            return
+
+        enemy = self.enemies[0]
+
+        enemy.take_damage(enemy.health)

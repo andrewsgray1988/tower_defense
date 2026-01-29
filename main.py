@@ -69,7 +69,8 @@ def main():
                     if DEBUG_MODE and not debug_thread_started:
                         threading.Thread(
                             target=debug_window,
-                            args=(game.spawn_enemy,),
+                            args=(game.spawn_enemy,
+                                  game.kill_earliest_enemy),
                             daemon=True
                         ).start()
                         debug_thread_started = True

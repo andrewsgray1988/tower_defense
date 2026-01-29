@@ -20,7 +20,7 @@ def print_grid_position(mouse_x, mouse_y, map_data):
     grid_y = row + 1
     print(f"Grid: ({grid_x}, {grid_y})")
 
-def debug_window(spawn_enemy_callback):
+def debug_window(spawn_enemy_callback, kill_enemy_callback):
     def close_all():
         SETTINGS['Wave'] = 0
         SETTINGS['Scrap'] = 0
@@ -69,8 +69,12 @@ def debug_window(spawn_enemy_callback):
         scrap_var.set(f"Scrap: {SETTINGS['Scrap']}")
 
     tk.Button(scrap_frame, text="+1000", command=lambda: update_scrap()).pack(side=tk.LEFT,pady=5)
-    tk.Button(root, text="Spawn Fighter", command=lambda: spawn_enemy_callback("Fighter")
-    ).pack(pady=10)
+
+    #Fighter Section
+    fighter_frame = tk.Frame(root)
+    fighter_frame.pack(pady=5)
+    tk.Button(fighter_frame, text="Spawn Fighter", command=lambda: spawn_enemy_callback("Fighter")).pack(side=tk.LEFT, pady=10)
+    tk.Button(fighter_frame, text="Kill Fighter", command=kill_enemy_callback).pack(side=tk.LEFT, pady=10)
 
     tk.Button(root, text="Close Program", command=close_all).pack(pady=5)
 
