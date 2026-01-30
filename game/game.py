@@ -44,11 +44,9 @@ class Game:
         for enemy in self.enemies:
             enemy.move_along_path(self.map_data, dt)
 
-            # GOLD PICKUP CHECK
             if (
                     enemy._alive
                     and not enemy.carrying_gold
-                    and enemy.state == enemy.state.GOING_TO_GOLD
             ):
                 tile = enemy.get_current_tile()
                 if tile and self.has_gold_at(tile):
@@ -58,7 +56,6 @@ class Game:
                         enemy._path_direction = -1
                         enemy.state = enemy.state.RETURNING_TO_EXIT
 
-        # GOLD DROP ON DEATH
         for enemy in self.enemies:
             if (
                     not enemy._alive
