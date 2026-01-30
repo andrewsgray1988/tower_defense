@@ -35,6 +35,7 @@ class Enemy:
         self.state = AdventurerState.GOING_TO_GOLD
         self.carrying_gold = False
         self._gold_dropped = False
+        self._escaped = False
 
     def set_stats(self):
         enemy_data = ENEMIES[self._key]
@@ -80,6 +81,32 @@ class Enemy:
         rect = self._asset.get_rect(center=(self.x, self.y))
         screen.blit(self._asset, rect)
 
+        if self.health <= 0:
+            return
+
+        BAR_HEIGHT = 6
+        BAR_PADDING = 2
+
+        bar_width = rect.width
+        bar_x = rect.left
+        bar_y = rect.top - BAR_HEIGHT - BAR_PADDING
+
+        # Health ratio (clamped)
+        health_ratio = max(self.health / self.max_health, 0)
+
+        # Background (black)
+        bg_rect = pygame.Rect(bar_x, bar_y, bar_width, BAR_HEIGHT)
+        pygame.draw.rect(screen, (0, 0, 0), bg_rect)
+
+        # Health fill (red)
+        fill_width = int(bar_width * health_ratio)
+        if fill_width > 0:
+            fill_rect = pygame.Rect(bar_x, bar_y, fill_width, BAR_HEIGHT)
+            pygame.draw.rect(screen, (200, 0, 0), fill_rect)
+
+        # Border (white)
+        pygame.draw.rect(screen, (255, 255, 255), bg_rect, 1)
+
     #Death trigger, and adds Essence to player's pool
     def destroy_enemy(self):
         SETTINGS['Essence'] += self.essence
@@ -90,6 +117,7 @@ class Enemy:
         if self.carrying_gold:
             SETTINGS["Stolen Gold"] += 1
         self._alive = False
+        self._escaped = True
 
     #Damage trigger, calculating for armor pierce
     def deal_damage(self, target):
@@ -195,6 +223,17 @@ class Enemy:
             self.x += dx / distance * move_distance
             self.y += dy / distance * move_distance
 
+    def get_current_tile(self):
+        if self._path_direction == 1:
+            index = self.path_index - 1
+        else:
+            index = self.path_index + 1
+
+        if 0 <= index < len(self.path):
+            return tuple(self.path[index])
+
+        return None
+
     def get_drop_tile(self):
         if self.path_index < 0:
             return tuple(self.path[0])
@@ -205,7 +244,6 @@ class Enemy:
             prev_index = self.path_index - self._path_direction
             if 0 <= prev_index < len(self.path):
                 return tuple(self.path[prev_index])
-
         return target_tile
 
     def path_end(self):

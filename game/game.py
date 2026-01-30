@@ -44,11 +44,32 @@ class Game:
         for enemy in self.enemies:
             enemy.move_along_path(self.map_data, dt)
 
+            # GOLD PICKUP CHECK
+            if (
+                    enemy._alive
+                    and not enemy.carrying_gold
+                    and enemy.state == enemy.state.GOING_TO_GOLD
+            ):
+                tile = enemy.get_current_tile()
+                if tile and self.has_gold_at(tile):
+                    if self.take_gold_from(tile, 1):
+                        enemy.path.insert(0, enemy.spawn)
+                        enemy.carrying_gold = True
+                        enemy._path_direction = -1
+                        enemy.state = enemy.state.RETURNING_TO_EXIT
+
+        # GOLD DROP ON DEATH
         for enemy in self.enemies:
-            if not enemy._alive and enemy.carrying_gold and not enemy._gold_dropped:
+            if (
+                    not enemy._alive
+                    and enemy.carrying_gold
+                    and not enemy._gold_dropped
+                    and not enemy._escaped
+            ):
                 drop_tile = enemy.get_drop_tile()
                 self.drop_gold(drop_tile, 1)
-                enemy.gold_dropped = True
+                enemy._gold_dropped = True
+
         self.enemies = [e for e in self.enemies if e._alive]
 
     def draw(self, screen):
@@ -88,10 +109,13 @@ class Game:
         return True
 
     #Debug Features
-    def kill_earliest_enemy(self):
+    def kill_earliest_enemy(self, amount):
         if not self.enemies:
             return
 
         enemy = self.enemies[0]
 
-        enemy.take_damage(enemy.health)
+        if amount == "full":
+            enemy.take_damage(enemy.health)
+        else:
+            enemy.take_damage(amount)

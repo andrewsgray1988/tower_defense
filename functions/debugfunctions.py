@@ -6,7 +6,6 @@ import sys
 from functions.mapgeneration import pixel_to_grid
 from constants import (
     SETTINGS,
-    RUNNING,
     save_all_jsons
 )
 
@@ -22,8 +21,9 @@ def print_grid_position(mouse_x, mouse_y, map_data):
 
 def debug_window(spawn_enemy_callback, kill_enemy_callback):
     def close_all():
-        SETTINGS['Wave'] = 0
-        SETTINGS['Scrap'] = 0
+        SETTINGS['Wave'] = 1
+        SETTINGS['Scrap'] = 200
+        SETTINGS['Essence'] = 0.0
         SETTINGS['Current Gold'] = SETTINGS['Max Gold']
         SETTINGS['Stolen Gold'] = 0
         save_all_jsons()
@@ -74,7 +74,9 @@ def debug_window(spawn_enemy_callback, kill_enemy_callback):
     fighter_frame = tk.Frame(root)
     fighter_frame.pack(pady=5)
     tk.Button(fighter_frame, text="Spawn Fighter", command=lambda: spawn_enemy_callback("Fighter")).pack(side=tk.LEFT, pady=10)
-    tk.Button(fighter_frame, text="Kill Fighter", command=kill_enemy_callback).pack(side=tk.LEFT, pady=10)
+    tk.Button(fighter_frame, text="Damage Fighter", command=lambda: kill_enemy_callback(5)).pack(side=tk.LEFT, pady=10)
+    tk.Button(fighter_frame, text="Kill Fighter", command=lambda: kill_enemy_callback("full")).pack(side=tk.LEFT, pady=10)
+
 
     tk.Button(root, text="Close Program", command=close_all).pack(pady=5)
 

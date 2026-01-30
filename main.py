@@ -104,8 +104,19 @@ def main():
 
             font = pygame.font.SysFont(None, 24)
             gold_text = f"Max Gold: {SETTINGS['Max Gold']}  Current Gold: {SETTINGS['Current Gold']}  Stolen Gold: {SETTINGS['Stolen Gold']}"
-            text_surface = font.render(gold_text, True, (255, 255, 0))
-            screen.blit(text_surface, (10, 10))  # Top-left corner
+            wave_text = f"Wave: {SETTINGS['Wave']}"
+            scrap_text = f"Scrap: {int(SETTINGS['Scrap'])}  Essence: {int(SETTINGS['Essence'])}"
+
+            gold_surface = font.render(gold_text, True, (255, 255, 0))
+            wave_surface = font.render(wave_text, True, (255, 255, 0))
+            scrap_surface = font.render(scrap_text, True, (255, 255, 0))
+
+            screeny = 10
+            screen.blit(gold_surface, (10, screeny))
+            screeny += gold_surface.get_height() + 4
+            screen.blit(wave_surface, (10, screeny))
+            screeny += wave_surface.get_height() + 4
+            screen.blit(scrap_surface, (10, screeny))
 
         pygame.display.flip()
 
