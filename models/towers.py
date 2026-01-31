@@ -1,3 +1,7 @@
+"""
+This file handles the game play logic on the offensive towers
+"""
+
 import time
 import math
 
@@ -5,20 +9,22 @@ from collections import deque
 from constants import (
     TOWERS,
     SETTINGS,
-    UPGRADES
+    UPGRADES,
+    MIN_ATTACK_SPEED
 )
-from models.enemies import Enemy
 
-MIN_ATTACK_SPEED = 0.1
-
+#Tower storage class
 class Tower:
     def __init__(self, key, x, y):
-        self._key = key #Sets the trigger to pull from Constants
-        self.set_stats() #Initializes stats on spawn
-        self._last_attack = 0 #Initiates flag for attacking and setting cooldown
+        self._key = key
+        self.set_stats()
+        self._last_attack = 0
         self.x = x
         self.y = y
 
+    """
+    Game / Initiate Section
+    """
     def set_stats(self):
         tower_data = TOWERS[self._key]
         reuse_queue = deque(sorted(tower_data['reuse_list']))
@@ -53,6 +59,9 @@ class Tower:
 
         tower_data['reuse_list'] = list(reuse_queue)
 
+    """
+    Combat Logic
+    """
     #Death trigger
     def destroy_tower(self):
         tower_data = TOWERS[self._key]
@@ -71,6 +80,39 @@ class Tower:
         if self.health <= 0:
             self.destroy_tower()
 
+    # Checks distance to target
+    def distance_to(self, target):
+        return math.hypot(target.x - self.x, target.y - self.y)
+
+    # Checks closest target to attack
+    def get_closest_enemy_in_range(self, enemies):
+        closest = None
+        min_distance = float('inf')
+
+        for enemy in enemies:
+            if not hasattr(enemy, "x") or not hasattr(enemy, "take_damage"):
+                continue
+
+            dist = self.distance_to(enemy)
+            if dist <= self.range and dist < min_distance:
+                closest = enemy
+                min_distance = dist
+
+        return closest
+
+    # Attack trigger
+    def attack_closest_enemy(self, enemies):
+        now = time.time()
+        if now - self._last_attack < self.attack_speed:
+            return
+        target = self.get_closest_enemy_in_range(enemies)
+        if target:
+            self.deal_damage(target)
+            self._last_attack = now
+
+    """
+    Maintenance Logic
+    """
     #Sell tower for some gold back
     def sell_tower(self):
         SETTINGS['Gold'] += self.cost * (UPGRADES['Sellback Mod'] * 0.01)
@@ -86,30 +128,14 @@ class Tower:
         self.attack_speed = max(self.attack_speed * self._attack_speed_multiplier, MIN_ATTACK_SPEED) #Caps attack speed
         self.upgrade_cost *= self._upgrade_cost_multiplier
 
-    #Checks distance to target
-    def distance_to(self, target):
-        return math.hypot(target.x - self.x, target.y - self.y)
 
-    #Checks closest target to attack
-    def get_closest_enemy_in_range(self, enemies):
-        closest = None
-        min_distance = float('inf')
+"""
+Individual Tower Types and their unique features
+"""
+class Sword(Tower):
+    def __init__(self, x, y):
+        super().__init__("Sword", x, y)
 
-        for enemy in enemies:
-            if not isinstance(enemy, Enemy):
-                continue
-            dist = self.distance_to(enemy)
-            if dist <= self.range and dist < min_distance:
-                closest = enemy
-                min_distance = dist
-        return closest
-
-    #Attack trigger
-    def attack_closest_enemy(self, enemies):
-        now = time.time()
-        if now - self._last_attack < self.attack_speed:
-            return
-        target = self.get_closest_enemy_in_range(enemies)
-        if target:
-            self.deal_damage(target)
-            self._last_attack = now
+class Archer(Tower):
+    def __init__(self, x, y):
+        super().__init__("archer", x, y)

@@ -1,3 +1,7 @@
+"""
+This file is general functions - functions that may be used universally for general purpose
+"""
+
 import os
 import json
 import threading
@@ -18,7 +22,8 @@ def save_json(file, data):
         json.dump(data, json_file, indent=4)
 
 #Sets up periodic saving for the JSON files
-def periodic_save(save_func):
-    interval = 30 #Seconds
+def periodic_save(save_func, interval=30):
     save_func() #Save Function
-    threading.Timer(interval, periodic_save, args=(save_func, interval)).start()
+    t = threading.Timer(interval, periodic_save, args=(save_func,))
+    t.daemon = True
+    t.start()
