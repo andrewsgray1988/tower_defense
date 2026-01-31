@@ -1,3 +1,7 @@
+"""
+This file is for handling all enemy logic
+"""
+
 import time
 import math
 import os
@@ -10,14 +14,16 @@ from constants import (
 )
 from models.towers import Tower
 
+#Asset Storage, to reduce multiple loads for the same asset
 _ENEMY_ASSET_CACHE = {}
 
+#Enum setup
 class AdventurerState(Enum):
     GOING_TO_GOLD = 1
     RETURNING_TO_EXIT = 2
     DEAD = 3
 
-#Base enemy class
+#Enemy Parent
 class Enemy:
     def __init__(self, key):
         self._key = key #Sets the trigger to pull from Constants
@@ -37,6 +43,11 @@ class Enemy:
         self._gold_dropped = False
         self._escaped = False
 
+    """
+    Game / Initiate Section
+    """
+    #Pulls info from ENEMIES
+    #ENEMIES stores all info from enemies.json, and is stored in constants to lower json reading
     def set_stats(self):
         enemy_data = ENEMIES[self._key]
         self.name = enemy_data['name']
@@ -59,6 +70,7 @@ class Enemy:
 
         self._asset = _ENEMY_ASSET_CACHE[asset_path]
 
+    #Spawn logic
     def spawn(self, map_data):
         self.spawn = map_data["spawn"]
         spawn_col, spawn_row = self.spawn
@@ -77,6 +89,7 @@ class Enemy:
         self.path = map_data["path"][:]
         self.path_index = 0
 
+    #Draw logic
     def draw(self, screen):
         rect = self._asset.get_rect(center=(self.x, self.y))
         screen.blit(self._asset, rect)
@@ -91,41 +104,45 @@ class Enemy:
         bar_x = rect.left
         bar_y = rect.top - BAR_HEIGHT - BAR_PADDING
 
-        # Health ratio (clamped)
+        # Health ratio
         health_ratio = max(self.health / self.max_health, 0)
 
-        # Background (black)
+        # Background
         bg_rect = pygame.Rect(bar_x, bar_y, bar_width, BAR_HEIGHT)
         pygame.draw.rect(screen, (0, 0, 0), bg_rect)
 
-        # Health fill (red)
+        # Health fill
         fill_width = int(bar_width * health_ratio)
         if fill_width > 0:
             fill_rect = pygame.Rect(bar_x, bar_y, fill_width, BAR_HEIGHT)
             pygame.draw.rect(screen, (200, 0, 0), fill_rect)
 
-        # Border (white)
+        # Border
         pygame.draw.rect(screen, (255, 255, 255), bg_rect, 1)
 
-    #Death trigger, and adds Essence to player's pool
+    """
+    Combat Section
+    """
+    #Death trigger
     def destroy_enemy(self):
         SETTINGS['Essence'] += self.essence
         SETTINGS['Scrap'] += self.scrap
         self._alive = False
 
+    #Escaped trigger
     def get_away(self):
         if self.carrying_gold:
             SETTINGS["Stolen Gold"] += 1
         self._alive = False
         self._escaped = True
 
-    #Damage trigger, calculating for armor pierce
+    #Damage trigger
     def deal_damage(self, target):
         effective_armor = target.armor * (1 - self.armor_pierce)
         damage_dealt = max(self.damage - effective_armor, 0)
         target.take_damage(damage_dealt)
 
-    #Receiving damage trigger
+    #Receive damage trigger
     def take_damage(self, damage_taken):
         self.health -= damage_taken
         if self.health <= 0:
@@ -159,6 +176,7 @@ class Enemy:
             self.deal_damage(target)
             self._last_attack = now
 
+    #Takes gold from the pile
     def take_gold(self):
         if self.carrying_gold:
             return
@@ -168,10 +186,15 @@ class Enemy:
         self._path_direction = -1
         self.state = AdventurerState.RETURNING_TO_EXIT
 
+    """
+    Movement Logic
+    """
+    #Reverses movement
     def turn_around(self):
         self._path_direction = -1
         self.state = AdventurerState.RETURNING_TO_EXIT
 
+    #Movement logic
     def move_along_path(self, map_data, dt):
         if not self._alive:
             return
@@ -223,6 +246,7 @@ class Enemy:
             self.x += dx / distance * move_distance
             self.y += dy / distance * move_distance
 
+    #Detects which tile the enemy is currently on
     def get_current_tile(self):
         if self._path_direction == 1:
             index = self.path_index - 1
@@ -234,6 +258,7 @@ class Enemy:
 
         return None
 
+    #Logic to detect if the tile they're on has gold or not
     def get_drop_tile(self):
         if self.path_index < 0:
             return tuple(self.path[0])
@@ -246,6 +271,7 @@ class Enemy:
                 return tuple(self.path[prev_index])
         return target_tile
 
+    #Reached the end of the path
     def path_end(self):
         self.path.insert(0, self.spawn)
         if self.state == AdventurerState.GOING_TO_GOLD:
@@ -256,6 +282,9 @@ class Enemy:
         elif self.state == AdventurerState.RETURNING_TO_EXIT:
             self.get_away()
 
+"""
+Individual Enemy Types and their unique features
+"""
 class Fighter(Enemy):
     def __init__(self):
         super().__init__("Fighter")

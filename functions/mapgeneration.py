@@ -1,11 +1,15 @@
+"""
+This file is for map generating functions
+"""
+
 import os
 import pygame
 
 from constants import (
-    MAPS,
-    TILE_SIZE
+    MAPS
 )
 
+#Function to calculate what pixel is inside the grid
 def grid_to_pixel(col, row, map_data):
     tile_width = map_data["scaled_width"] / map_data["columns"]
     tile_height = map_data["scaled_height"] / map_data["rows"]
@@ -15,6 +19,7 @@ def grid_to_pixel(col, row, map_data):
 
     return int(x), int(y)
 
+#Function to determine what grid the pixel is in
 def pixel_to_grid(x, y, map_data):
     if x < map_data["draw_x"] or y < map_data["draw_y"]:
         return None, None
@@ -32,13 +37,12 @@ def pixel_to_grid(x, y, map_data):
 
     return col, row
 
+#Function to initiate and load map data from MAPS
+#MAPS is the constant to store maps.json to reduce multiple json loads and keep within memory
 def load_map(map_name):
     map_data = MAPS[map_name]
-
     image_path = os.path.join("assets", "maps", map_data["Asset"])
-
     map_surface = pygame.image.load(image_path).convert_alpha()
-
     return {
         "surface": map_surface,
         "width": map_data["Width"],
@@ -50,6 +54,7 @@ def load_map(map_name):
         "path": map_data["Path"]
     }
 
+#Displays a visual for the grid
 def draw_grid(screen, map_data):
     tile_width = map_data["scaled_width"] / map_data["columns"]
     tile_height = map_data["scaled_height"] / map_data["rows"]

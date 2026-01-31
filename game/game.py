@@ -1,11 +1,17 @@
+"""
+This file handles the game play logic for enemy and tower placement
+"""
+
 import pygame
 import os
 
 from models.enemies import Fighter
 from constants import SETTINGS
 
+#Asset Storage, to reduce multiple loads for the same asset
 _COIN_ASSET = None
 
+#Game storage class
 class Game:
     def __init__(self, map_data):
         self.map_data = map_data
@@ -30,24 +36,15 @@ class Game:
             (coin_size, coin_size)
         )
 
-    #Enemy Features
-    def spawn_enemy(self, enemy_type="Fighter"):
-        if enemy_type == "Fighter":
-            enemy = Fighter()
-        else:
-            return
-
-        enemy.spawn(self.map_data)
-        self.enemies.append(enemy)
+    """
+    Game Logic
+    """
 
     def update(self, dt):
         for enemy in self.enemies:
             enemy.move_along_path(self.map_data, dt)
 
-            if (
-                    enemy._alive
-                    and not enemy.carrying_gold
-            ):
+            if enemy._alive and not enemy.carrying_gold:
                 tile = enemy.get_current_tile()
                 if tile and self.has_gold_at(tile):
                     if self.take_gold_from(tile, 1):
@@ -88,15 +85,29 @@ class Game:
         for enemy in self.enemies:
             enemy.draw(screen)
 
-    #Gold Features
+    """
+    Enemy Logic
+    """
+    def spawn_enemy(self, enemy_type="Fighter"):
+        if enemy_type == "Fighter":
+            enemy = Fighter()
+        else:
+            return
+
+        enemy.spawn(self.map_data)
+        self.enemies.append(enemy)
+
+    #Signal to drop gold and store in memory on enemy death
     def drop_gold(self, tile_pos, amount=1):
         if tile_pos not in self.gold_drops:
             self.gold_drops[tile_pos] = 0
         self.gold_drops[tile_pos] += amount
 
+    #Signal for enemies to detect if there is gold at the tile they're on
     def has_gold_at(self, tile_pos):
         return self.gold_drops.get(tile_pos, 0) > 0
 
+    #Signal to remove dropped gold logic
     def take_gold_from(self, tile_pos, amount=1):
         if tile_pos not in self.gold_drops:
             return False
@@ -105,13 +116,13 @@ class Game:
             del self.gold_drops[tile_pos]
         return True
 
-    #Debug Features
+    """
+    Debug Features
+    """
     def kill_earliest_enemy(self, amount):
         if not self.enemies:
             return
-
         enemy = self.enemies[0]
-
         if amount == "full":
             enemy.take_damage(enemy.health)
         else:

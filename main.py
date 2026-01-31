@@ -1,3 +1,7 @@
+"""
+This page is for processing and running the game loop
+"""
+
 import pygame
 import constants
 import threading
@@ -21,7 +25,7 @@ from functions.debugfunctions import (
 
 from game.game import Game
 
-
+#Main game loop
 def main():
     pygame.init()
 

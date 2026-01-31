@@ -1,3 +1,7 @@
+"""
+This file is general functions - functions that may be used universally for general purpose
+"""
+
 import os
 import json
 import threading

@@ -1,4 +1,6 @@
-
+"""
+This file handles the game play logic on the non-offensive towers
+"""
 
 from collections import deque
 from constants import (
@@ -7,6 +9,7 @@ from constants import (
     UPGRADES
 )
 
+#Structure storage class
 class Structure:
     def __init__(self, key, x, y):
         self._key = key #Sets the trigger to pull from Constants
@@ -14,6 +17,9 @@ class Structure:
         self.x = x
         self.y = y
 
+    """
+    Game / Initiate Section
+    """
     def set_stats(self):
         structure_data = STRUCTURES[self._key]
         reuse_queue = deque(sorted(structure_data['reuse_list']))
@@ -42,6 +48,9 @@ class Structure:
 
         structure_data['reuse_list'] = list(reuse_queue)
 
+    """
+    Combat Logic
+    """
     #Death trigger
     def destroy_structure(self):
         structure_data = STRUCTURES[self._key]
@@ -54,6 +63,9 @@ class Structure:
         if self.health <= 0:
             self.destroy_structure()
 
+    """
+    Maintenance Section
+    """
     #Sell tower for some gold back
     def sell_structure(self):
         SETTINGS['Gold'] += self.cost * (UPGRADES['Sellback Mod'] * 0.01)
@@ -66,3 +78,7 @@ class Structure:
         self.max_health += health_num
         self.armor *= self._armor_multiplier
         self.upgrade_cost *= self._upgrade_cost_multiplier
+
+"""
+Individual Structure Types and their unique features
+"""
