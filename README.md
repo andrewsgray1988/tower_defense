@@ -106,7 +106,7 @@ Enemy dies (health ≤ 0)
 
 ---
 
-## Code Examples
+## Code Example
 Enemy Movement Logic
 ```python
     def move_along_path(self, map_data, dt):
@@ -160,8 +160,6 @@ Enemy Movement Logic
             self.x += dx / distance * move_distance
             self.y += dy / distance * move_distance
 ```
-
-
 ---
 
 ## Technologies & Libraries
@@ -172,7 +170,6 @@ Enemy Movement Logic
 - **JSON** — External configuration for enemies, towers, and maps.
 
 ---
-
 ## Notes
 
 - This project is currently **WIP**;

@@ -24,6 +24,7 @@ from functions.debugfunctions import (
 )
 
 from game.game import Game
+from game.ui import UIManager
 
 #Main game loop
 def main():
@@ -67,6 +68,7 @@ def main():
 
                     # -------- CREATE GAME --------
                     game = Game(current_map)
+                    ui = UIManager(game)
                     constants.GAME_STATE = "play"
 
                     # -------- START DEBUG PANEL (ONCE) --------
@@ -79,12 +81,12 @@ def main():
                         ).start()
                         debug_thread_started = True
 
-            if (
-                event.type == pygame.MOUSEBUTTONDOWN
-                and constants.GAME_STATE == "play"
-            ):
-                mouse_x, mouse_y = event.pos
-                print_grid_position(mouse_x, mouse_y, current_map)
+            if constants.GAME_STATE == "play":
+                ui.handle_event(event)
+
+                if event.type == pygame.MOUSEBUTTONDOWN:
+                    mouse_x, mouse_y = event.pos
+                    print_grid_position(mouse_x, mouse_y, current_map)
 
         # -------- DRAW --------
         screen.fill((30, 30, 30))
@@ -102,6 +104,7 @@ def main():
 
             game.update(dt)
             game.draw(screen)
+            ui.draw(screen)
 
             if DEBUG_MODE:
                 draw_grid(screen, current_map)
