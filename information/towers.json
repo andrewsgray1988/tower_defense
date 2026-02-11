@@ -1,6 +1,7 @@
 {
     "Sword": {
         "max": 1,
+        "asset": "towers/Sword.png",
         "reuse_list": [],
         "default_health": 10.0,
         "default_armor": 1.0,
@@ -18,6 +19,7 @@
     },
     "Archer": {
         "max": 1,
+        "asset": "towers/Archer.png",
         "reuse_list": [],
         "default_health": 10.0,
         "default_armor": 1.0,

@@ -6,11 +6,15 @@ import pygame
 import os
 
 from models.enemies import Fighter
+from models.towers import Sword, Archer
 from functions.mapgeneration import (
     pixel_to_grid,
     grid_to_pixel
 )
-from constants import SETTINGS
+from gameconfig import (
+    SETTINGS,
+    TOWERS
+)
 
 #Asset Storage, to reduce multiple loads for the same asset
 _COIN_ASSET = None
@@ -88,6 +92,8 @@ class Game:
             screen.blit(self.coin_asset, rect)
 
         #Draw Enemies
+        for tower in self.towers:
+            screen.blit(tower._asset, (tower.x, tower.y))
         for enemy in self.enemies:
             enemy.draw(screen)
 
@@ -149,6 +155,33 @@ class Game:
 
     def register_tower_tile(self, col, row):
         self._tower_tiles.add((col, row))
+
+    def place_tower(self, tower_key, col, row):
+        if not self.is_tile_buildable(col, row):
+            return False
+        if tower_key not in TOWERS:
+            return False
+
+        cost = TOWERS[tower_key]["default_cost"]
+
+        if SETTINGS["Scrap"] < cost:
+            return False
+
+        x, y = self.tile_to_screen(col, row)
+
+        match tower_key:
+            case "Sword":
+                tower = Sword(x, y)
+            case "Archer":
+                tower = Archer(x, y)
+            case _:
+                return False
+        SETTINGS["Scrap"] -= cost
+
+        self.towers.append(tower)
+        self.register_tower_tile(col, row)
+
+        return True
 
     """
     Debug Features

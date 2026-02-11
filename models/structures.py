@@ -3,7 +3,7 @@ This file handles the game play logic on the non-offensive towers
 """
 
 from collections import deque
-from constants import (
+from gameconfig import (
     STRUCTURES,
     SETTINGS,
     UPGRADES

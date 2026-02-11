@@ -4,11 +4,12 @@ This file is for handling the debug window and functions involved with that.
 
 import tkinter as tk
 import constants
+import gameconfig
 import pygame
 import sys
 
 from functions.mapgeneration import pixel_to_grid
-from constants import (
+from gameconfig import (
     SETTINGS,
     save_all_jsons
 )

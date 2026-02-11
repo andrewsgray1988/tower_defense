@@ -8,7 +8,7 @@ import os
 import pygame
 
 from enum import Enum
-from constants import (
+from gameconfig import (
     ENEMIES,
     SETTINGS
 )
@@ -20,8 +20,9 @@ _ENEMY_ASSET_CACHE = {}
 #Enum setup
 class AdventurerState(Enum):
     GOING_TO_GOLD = 1
-    RETURNING_TO_EXIT = 2
-    DEAD = 3
+    CARRYING_GOLD = 2
+    RETURNING_TO_EXIT = 3
+    DEAD = 4
 
 #Enemy Parent
 class Enemy:
@@ -184,7 +185,7 @@ class Enemy:
         SETTINGS["Current Gold"] -= 1
         self.carrying_gold = True
         self._path_direction = -1
-        self.state = AdventurerState.RETURNING_TO_EXIT
+        self.state = AdventurerState.CARRYING_GOLD
 
     """
     Movement Logic
@@ -279,7 +280,7 @@ class Enemy:
                 self.take_gold()
             else:
                 self.turn_around()
-        elif self.state == AdventurerState.RETURNING_TO_EXIT:
+        elif self.state == AdventurerState.RETURNING_TO_EXIT or self.state == AdventurerState.CARRYING_GOLD:
             self.get_away()
 
 """
