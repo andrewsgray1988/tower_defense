@@ -5,7 +5,7 @@ This file is for map generating functions
 import os
 import pygame
 
-from constants import (
+from gameconfig import (
     MAPS
 )
 

@@ -6,7 +6,15 @@ import pygame
 import os
 
 from models.enemies import Fighter
-from constants import SETTINGS
+from models.towers import Sword, Archer
+from functions.mapgeneration import (
+    pixel_to_grid,
+    grid_to_pixel
+)
+from gameconfig import (
+    SETTINGS,
+    TOWERS
+)
 
 #Asset Storage, to reduce multiple loads for the same asset
 _COIN_ASSET = None
@@ -19,6 +27,8 @@ class Game:
         self.towers = []
         self.gold_drops = {}
         self.stored_gold = SETTINGS['Max Gold']
+        self._blocked_tiles = set(tuple(tile) for tile in map_data["path"])
+        self._tower_tiles = set()
 
         global _COIN_ASSET
         if _COIN_ASSET is None:
@@ -82,8 +92,17 @@ class Game:
             screen.blit(self.coin_asset, rect)
 
         #Draw Enemies
+        for tower in self.towers:
+            screen.blit(tower._asset, (tower.x, tower.y))
         for enemy in self.enemies:
             enemy.draw(screen)
+
+    def screen_to_tile(self, pos):
+        x, y = pos
+        return pixel_to_grid(x, y, self.map_data)
+
+    def tile_to_screen(self, col, row):
+        return grid_to_pixel(col, row, self.map_data)
 
     """
     Enemy Logic
@@ -114,6 +133,54 @@ class Game:
         self.gold_drops[tile_pos] -= amount
         if self.gold_drops[tile_pos] <= 0:
             del self.gold_drops[tile_pos]
+        return True
+
+    """
+    Tower Logic
+    """
+
+    #Make sure that the tiles are buildable and in bounds
+    def is_tile_in_bounds(self, col, row):
+        return (
+            0 <= col < self.map_data["columns"]
+            and 0 <= row < self.map_data["rows"]
+        )
+
+    def is_tile_buildable(self, col, row):
+        return (
+            self.is_tile_in_bounds(col, row)
+            and (col, row) not in self._blocked_tiles
+            and (col, row) not in self._tower_tiles
+        )
+
+    def register_tower_tile(self, col, row):
+        self._tower_tiles.add((col, row))
+
+    def place_tower(self, tower_key, col, row):
+        if not self.is_tile_buildable(col, row):
+            return False
+        if tower_key not in TOWERS:
+            return False
+
+        cost = TOWERS[tower_key]["default_cost"]
+
+        if SETTINGS["Scrap"] < cost:
+            return False
+
+        x, y = self.tile_to_screen(col, row)
+
+        match tower_key:
+            case "Sword":
+                tower = Sword(x, y)
+            case "Archer":
+                tower = Archer(x, y)
+            case _:
+                return False
+        SETTINGS["Scrap"] -= cost
+
+        self.towers.append(tower)
+        self.register_tower_tile(col, row)
+
         return True
 
     """

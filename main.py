@@ -3,13 +3,16 @@ This page is for processing and running the game loop
 """
 
 import pygame
-import constants
+import gameconfig
 import threading
 
 from constants import (
     SCREEN_WIDTH,
     SCREEN_HEIGHT,
-    DEBUG_MODE,
+    DEBUG_MODE
+)
+
+from gameconfig import (
     SETTINGS
 )
 
@@ -24,6 +27,7 @@ from functions.debugfunctions import (
 )
 
 from game.game import Game
+from game.ui import UIManager
 
 #Main game loop
 def main():
@@ -38,15 +42,17 @@ def main():
     game = None
     debug_thread_started = False
 
-    while constants.RUNNING:
+    gameconfig.RUNNING = True
+
+    while gameconfig.RUNNING:
         dt = clock.tick(60) / 1000  # Delta time in seconds
 
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
-                constants.RUNNING = False
+                gameconfig.RUNNING = False
 
             if event.type == pygame.KEYDOWN:
-                if constants.GAME_STATE == "menu" and event.key == pygame.K_RETURN:
+                if gameconfig.GAME_STATE == "menu" and event.key == pygame.K_RETURN:
                     # -------- LOAD MAP --------
                     current_map = load_map("Testmap")
 
@@ -67,7 +73,8 @@ def main():
 
                     # -------- CREATE GAME --------
                     game = Game(current_map)
-                    constants.GAME_STATE = "play"
+                    ui = UIManager(game)
+                    gameconfig.GAME_STATE = "play"
 
                     # -------- START DEBUG PANEL (ONCE) --------
                     if DEBUG_MODE and not debug_thread_started:
@@ -79,22 +86,22 @@ def main():
                         ).start()
                         debug_thread_started = True
 
-            if (
-                event.type == pygame.MOUSEBUTTONDOWN
-                and constants.GAME_STATE == "play"
-            ):
-                mouse_x, mouse_y = event.pos
-                print_grid_position(mouse_x, mouse_y, current_map)
+            if gameconfig.GAME_STATE == "play":
+                ui.handle_event(event)
+
+                if event.type == pygame.MOUSEBUTTONDOWN:
+                    mouse_x, mouse_y = event.pos
+                    print_grid_position(mouse_x, mouse_y, current_map)
 
         # -------- DRAW --------
         screen.fill((30, 30, 30))
 
-        if constants.GAME_STATE == "menu":
+        if gameconfig.GAME_STATE == "menu":
             font = pygame.font.SysFont(None, 48)
             text = font.render("Press ENTER to Play", True, (255, 255, 255))
             screen.blit(text, (200, 250))
 
-        elif constants.GAME_STATE == "play":
+        elif gameconfig.GAME_STATE == "play":
             screen.blit(
                 current_map["scaled_surface"],
                 (current_map["draw_x"], current_map["draw_y"])
@@ -102,6 +109,7 @@ def main():
 
             game.update(dt)
             game.draw(screen)
+            ui.draw(screen)
 
             if DEBUG_MODE:
                 draw_grid(screen, current_map)

@@ -4,14 +4,18 @@ This file handles the game play logic on the offensive towers
 
 import time
 import math
+import os
+import pygame
 
 from collections import deque
-from constants import (
+from gameconfig import (
     TOWERS,
     SETTINGS,
-    UPGRADES,
-    MIN_ATTACK_SPEED
+    UPGRADES
 )
+from constants import MIN_ATTACK_SPEED
+
+_TOWER_ASSET_CACHE = {}
 
 #Tower storage class
 class Tower:
@@ -58,6 +62,14 @@ class Tower:
         self._upgrade_cost_multiplier = tower_data['default_upgrade_cost_multiplier']
 
         tower_data['reuse_list'] = list(reuse_queue)
+
+        asset_path = tower_data['asset']
+
+        if asset_path not in _TOWER_ASSET_CACHE:
+            full_path = os.path.join("assets", asset_path)
+            _TOWER_ASSET_CACHE[asset_path] = pygame.image.load(full_path).convert_alpha()
+
+        self._asset = _TOWER_ASSET_CACHE[asset_path]
 
     """
     Combat Logic
@@ -138,4 +150,4 @@ class Sword(Tower):
 
 class Archer(Tower):
     def __init__(self, x, y):
-        super().__init__("archer", x, y)
+        super().__init__("Archer", x, y)
