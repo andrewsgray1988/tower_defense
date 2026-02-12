@@ -50,7 +50,7 @@ def debug_window(spawn_enemy_callback, kill_enemy_callback):
     wave_frame.pack(pady=5)
 
     wave_var = tk.StringVar()
-    wave_var.set(f"Wave: {SETTINGS['Wave']}")
+    wave_var.set("Wave:")
 
     wave_label = tk.Label(wave_frame, textvariable=wave_var)
     wave_label.pack(side=tk.LEFT, pady=5)
@@ -58,7 +58,7 @@ def debug_window(spawn_enemy_callback, kill_enemy_callback):
     #Function to make the wave button update in debug window
     def update_wave(num):
         SETTINGS['Wave'] += num
-        wave_var.set(f"Wave: {SETTINGS['Wave']}")
+        wave_var.set("Wave:")
 
     tk.Button(wave_frame, text="+", command=lambda: update_wave(1)).pack(side=tk.LEFT, padx=5)
     tk.Button(wave_frame, text="-", command=lambda: update_wave(-1)).pack(side=tk.LEFT, padx=5)
@@ -70,7 +70,7 @@ def debug_window(spawn_enemy_callback, kill_enemy_callback):
     scrap_frame.pack(pady=5)
 
     scrap_var = tk.StringVar()
-    scrap_var.set(f"Scrap: {SETTINGS['Scrap']}")
+    scrap_var.set(f"Scrap:")
 
     scrap_label = tk.Label(scrap_frame, textvariable=scrap_var)
     scrap_label.pack(side=tk.LEFT, pady=5)
@@ -78,7 +78,7 @@ def debug_window(spawn_enemy_callback, kill_enemy_callback):
     #Function to make the scrap button update in debug window
     def update_scrap():
         SETTINGS['Scrap'] += 100
-        scrap_var.set(f"Scrap: {SETTINGS['Scrap']}")
+        scrap_var.set(f"Scrap:")
 
     tk.Button(scrap_frame, text="+100", command=lambda: update_scrap()).pack(side=tk.LEFT,pady=5)
 

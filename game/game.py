@@ -29,6 +29,9 @@ class Game:
         self.stored_gold = SETTINGS['Max Gold']
         self._blocked_tiles = set(tuple(tile) for tile in map_data["path"])
         self._tower_tiles = set()
+        self.tile_width = map_data["scaled_width"] / map_data["columns"]
+        self.tile_height = map_data["scaled_height"] / map_data["rows"]
+        self.tile_size = int(min(self.tile_width, self.tile_height))
 
         global _COIN_ASSET
         if _COIN_ASSET is None:
@@ -78,8 +81,7 @@ class Game:
 
     def draw(self, screen):
         #Draw Coins
-        tile_width = self.map_data["scaled_width"] / self.map_data["columns"]
-        tile_height = self.map_data["scaled_height"] / self.map_data["rows"]
+        tile_width, tile_height = self.get_tile_size()
 
         for (col, row), count in self.gold_drops.items():
             if count <= 0:
@@ -93,10 +95,13 @@ class Game:
 
         #Draw Enemies
         for tower in self.towers:
-            screen.blit(tower._asset, (tower.x, tower.y))
+            tower.draw(screen)
         for enemy in self.enemies:
             enemy.draw(screen)
 
+    """
+    Tile Logic
+    """
     def screen_to_tile(self, pos):
         x, y = pos
         return pixel_to_grid(x, y, self.map_data)
@@ -104,16 +109,27 @@ class Game:
     def tile_to_screen(self, col, row):
         return grid_to_pixel(col, row, self.map_data)
 
+    def get_tile_center(self, col, row):
+        tile_width = self.map_data["scaled_width"] / self.map_data["columns"]
+        tile_height = self.map_data["scaled_height"] / self.map_data["rows"]
+        x = self.map_data["draw_x"] + col * tile_width + tile_width / 2
+        y = self.map_data["draw_y"] + row * tile_height + tile_height / 2
+        return x, y
+
+    def get_tile_size(self):
+        return self.tile_width, self.tile_height
+
     """
     Enemy Logic
     """
-    def spawn_enemy(self, enemy_type="Fighter"):
-        if enemy_type == "Fighter":
-            enemy = Fighter()
-        else:
-            return
+    def spawn_enemy(self, enemy_type):
+        match enemy_type:
+            case "Fighter":
+                enemy = Fighter(self)
+            case _:
+                return
 
-        enemy.spawn(self.map_data)
+        enemy.spawn()
         self.enemies.append(enemy)
 
     #Signal to drop gold and store in memory on enemy death
@@ -167,15 +183,14 @@ class Game:
         if SETTINGS["Scrap"] < cost:
             return False
 
-        x, y = self.tile_to_screen(col, row)
-
         match tower_key:
             case "Sword":
-                tower = Sword(x, y)
+                tower = Sword(self, col, row)
             case "Archer":
-                tower = Archer(x, y)
+                tower = Archer(self, col, row)
             case _:
                 return False
+
         SETTINGS["Scrap"] -= cost
 
         self.towers.append(tower)
@@ -186,6 +201,7 @@ class Game:
     """
     Debug Features
     """
+    #Damage or kill the earliest enemy to test damage
     def kill_earliest_enemy(self, amount):
         if not self.enemies:
             return

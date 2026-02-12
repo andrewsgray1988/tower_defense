@@ -73,16 +73,14 @@ class UIManager:
 
     #Build menu handler
     def handle_build_menu_click(self, mouse_pos):
-       for tower_key, rect in self.button_rects.items():
-           if rect.collidepoint(mouse_pos):
-               cost = TOWERS[tower_key]["default_cost"]
-               if SETTINGS["Scrap"] >= cost:
-                   col, row = self._build_menu_tile
-                   success = self.game.place_tower(tower_key, col, row)
+        for tower_key, rect in self.button_rects.items():
+            if rect.collidepoint(mouse_pos):
+                col, row = self._build_menu_tile
+                success = self.game.place_tower(tower_key, col, row)
 
-                   if success:
+                if success:
                     self.close_build_menu()
-               return
+                return
 
     """
     Rendering

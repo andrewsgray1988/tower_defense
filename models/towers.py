@@ -13,18 +13,23 @@ from gameconfig import (
     SETTINGS,
     UPGRADES
 )
-from constants import MIN_ATTACK_SPEED
+from constants import (
+    MIN_ATTACK_SPEED,
+    UPGRADE_MODIFIER
+)
 
 _TOWER_ASSET_CACHE = {}
 
 #Tower storage class
 class Tower:
-    def __init__(self, key, x, y):
+    def __init__(self, game, key, col, row):
+        self.game = game
         self._key = key
-        self.set_stats()
         self._last_attack = 0
-        self.x = x
-        self.y = y
+        self.col = col
+        self.row = row
+        self.set_stats()
+        self._initialize_position_and_asset()
 
     """
     Game / Initiate Section
@@ -39,6 +44,8 @@ class Tower:
             tower_data['max'] += 1
         else:
             self.num = reuse_queue.popleft()
+
+        tower_data['reuse_list'] = list(reuse_queue)
 
         #Base Stats
         self.name = f"{self._key} Tower {self.num}"
@@ -61,15 +68,24 @@ class Tower:
         self._attack_speed_multiplier = tower_data['default_attack_speed_multiplier']
         self._upgrade_cost_multiplier = tower_data['default_upgrade_cost_multiplier']
 
-        tower_data['reuse_list'] = list(reuse_queue)
-
+    def _initialize_position_and_asset(self):
+        tower_data = TOWERS[self._key]
         asset_path = tower_data['asset']
 
         if asset_path not in _TOWER_ASSET_CACHE:
             full_path = os.path.join("assets", asset_path)
-            _TOWER_ASSET_CACHE[asset_path] = pygame.image.load(full_path).convert_alpha()
+            image = pygame.image.load(full_path).convert_alpha()
+            _TOWER_ASSET_CACHE[asset_path] = image
+        base_image = _TOWER_ASSET_CACHE[asset_path]
 
-        self._asset = _TOWER_ASSET_CACHE[asset_path]
+        tile_size = self.game.tile_size
+        self._asset = pygame.transform.scale(base_image, (tile_size, tile_size))
+
+        self.x, self.y = self.game.get_tile_center(self.col, self.row)
+
+    def draw(self, screen):
+        rect = self._asset.get_rect(center=(self.x, self.y))
+        screen.blit(self._asset, rect)
 
     """
     Combat Logic
@@ -132,7 +148,7 @@ class Tower:
     #Upgrades the tower's stats
     def upgrade_tower(self):
         health_num = max(self.max_health * self._health_multiplier, 1) #Sets up health modifier
-        self.cost += self.upgrade_cost #Updates the cost based off upgrade cost, to calculate total cost
+        self.cost += (self.upgrade_cost * UPGRADE_MODIFIER) #Updates the cost based off upgrade cost, to calculate total cost
         self.health += health_num #Only heals the amount gained rather than heal to full
         self.max_health += health_num
         self.armor *= self._armor_multiplier
@@ -140,14 +156,13 @@ class Tower:
         self.attack_speed = max(self.attack_speed * self._attack_speed_multiplier, MIN_ATTACK_SPEED) #Caps attack speed
         self.upgrade_cost *= self._upgrade_cost_multiplier
 
-
 """
 Individual Tower Types and their unique features
 """
 class Sword(Tower):
-    def __init__(self, x, y):
-        super().__init__("Sword", x, y)
+    def __init__(self, game, col, row):
+        super().__init__(game,"Sword", col, row)
 
 class Archer(Tower):
-    def __init__(self, x, y):
-        super().__init__("Archer", x, y)
+    def __init__(self, game, col, row):
+        super().__init__(game,"Archer", col, row)
