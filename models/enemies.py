@@ -26,10 +26,12 @@ class AdventurerState(Enum):
 
 #Enemy Parent
 class Enemy:
-    def __init__(self, key):
+    def __init__(self, game, key):
+        self.game = game
         self._key = key #Sets the trigger to pull from Constants
         self._wave_modifier = SETTINGS['Wave'] * 1.0 #Multiplicative Modifier to increase strength
         self.set_stats() #Initializes stats on spawn
+        self._initialize_visuals()
         self._last_attack = 0 #Initiates flag for attacking and setting cooldown
         self.x = 0
         self.y = 0
@@ -63,31 +65,29 @@ class Enemy:
         self.attack_speed = enemy_data['default_attack_speed']
         self.move_speed = enemy_data['default_move_speed']
         self._alive = True
+
+
+    def _initialize_visuals(self):
+        enemy_data = ENEMIES[self._key]
         asset_path = enemy_data['asset']
 
         if asset_path not in _ENEMY_ASSET_CACHE:
             full_path = os.path.join("assets", asset_path)
-            _ENEMY_ASSET_CACHE[asset_path] = pygame.image.load(full_path).convert_alpha()
+            image = pygame.image.load(full_path).convert_alpha()
+            _ENEMY_ASSET_CACHE[asset_path] = image
+        base_image = _ENEMY_ASSET_CACHE[asset_path]
 
-        self._asset = _ENEMY_ASSET_CACHE[asset_path]
+        tile_size = self.game.tile_size
+        self._asset = pygame.transform.scale(base_image, (tile_size, tile_size))
 
     #Spawn logic
-    def spawn(self, map_data):
-        self.spawn = map_data["spawn"]
+    def spawn(self):
+        self.spawn = self.game.map_data["spawn"]
         spawn_col, spawn_row = self.spawn
 
-        tile_width = map_data["scaled_width"] / map_data["columns"]
-        tile_height = map_data["scaled_height"] / map_data["rows"]
+        self.x, self.y = self.game.get_tile_center(spawn_col, spawn_row)
 
-        self._asset = pygame.transform.scale(
-            self._asset,
-            (int(tile_width), int(tile_height))
-        )
-
-        self.x = map_data["draw_x"] + (spawn_col * tile_width) + tile_width / 2
-        self.y = map_data["draw_y"] + (spawn_row * tile_height) + tile_height / 2
-
-        self.path = map_data["path"][:]
+        self.path = self.game.map_data["path"][:]
         self.path_index = 0
 
     #Draw logic
@@ -213,11 +213,7 @@ class Enemy:
             else:
                 target_col, target_row = self.path[self.path_index]
 
-        tile_width = map_data["scaled_width"] / map_data["columns"]
-        tile_height = map_data["scaled_height"] / map_data["rows"]
-
-        target_x = map_data["draw_x"] + target_col * tile_width + tile_width / 2
-        target_y = map_data["draw_y"] + target_row * tile_height + tile_height / 2
+        target_x, target_y = self.game.get_tile_center(target_col, target_row)
 
         dx = target_x - self.x
         dy = target_y - self.y
@@ -232,7 +228,8 @@ class Enemy:
                 self.path_end()
             return
 
-        speed_per_second = math.hypot(tile_width, tile_height) / self.move_speed
+        tile_w, tile_h = self.game.get_tile_size()
+        speed_per_second = math.hypot(tile_w, tile_h) / self.move_speed
         move_distance = speed_per_second * dt
 
         if move_distance >= distance:
@@ -287,5 +284,5 @@ class Enemy:
 Individual Enemy Types and their unique features
 """
 class Fighter(Enemy):
-    def __init__(self):
-        super().__init__("Fighter")
+    def __init__(self, game):
+        super().__init__(game, "Fighter")
