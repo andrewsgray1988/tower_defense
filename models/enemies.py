@@ -10,9 +10,11 @@ import pygame
 from enum import Enum
 from gameconfig import (
     ENEMIES,
-    SETTINGS
+    SETTINGS,
+    WAVE_MODIFIER
 )
 from models.towers import Tower
+from functions.combat import CombatLogic
 
 #Asset Storage, to reduce multiple loads for the same asset
 _ENEMY_ASSET_CACHE = {}
@@ -25,14 +27,14 @@ class AdventurerState(Enum):
     DEAD = 4
 
 #Enemy Parent
-class Enemy:
+class Enemy(CombatLogic):
     def __init__(self, game, key):
+        CombatLogic.__init__(self)
         self.game = game
-        self._key = key #Sets the trigger to pull from Constants
-        self._wave_modifier = SETTINGS['Wave'] * 1.0 #Multiplicative Modifier to increase strength
-        self.set_stats() #Initializes stats on spawn
+        self._key = key
+        self._wave_modifier = SETTINGS['Wave'] * WAVE_MODIFIER
+        self.set_stats()
         self._initialize_visuals()
-        self._last_attack = 0 #Initiates flag for attacking and setting cooldown
         self.x = 0
         self.y = 0
         self.path_index = 0

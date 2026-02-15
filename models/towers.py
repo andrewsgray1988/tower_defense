@@ -8,6 +8,7 @@ import os
 import pygame
 
 from collections import deque
+from functions.combat import CombatLogic
 from gameconfig import (
     TOWERS,
     SETTINGS,
@@ -21,11 +22,11 @@ from constants import (
 _TOWER_ASSET_CACHE = {}
 
 #Tower storage class
-class Tower:
+class Tower(CombatLogic):
     def __init__(self, game, key, col, row):
+        CombatLogic.__init__(self)
         self.game = game
         self._key = key
-        self._last_attack = 0
         self.col = col
         self.row = row
         self.set_stats()
