@@ -8,7 +8,7 @@ import math
 class CombatLogic:
     def __init__(self):
         self._attack_timer = 0
-        self._current_target = None
+        self._current_targets = []
 
     #Combat checks
     def update_combat(self, dt):
@@ -16,13 +16,15 @@ class CombatLogic:
         if self._attack_timer > 0:
             self._attack_timer -= dt
 
+        self._validate_current_targets()
+
         #Validates or acquires target(s)
-        if not self._is_valid_target(self._current_target):
-            self._current_target = self._acquire_targets()
+        if not self._current_targets:
+            self._current_targets = self._acquire_targets()
 
         #Attempt attack
-        if self._current_target and self._attack_timer <= 0:
-            self.perform_attack(self._current_target)
+        if self._current_targets and self._attack_timer <= 0:
+            self.attack(self._current_targets)
             self._attack_timer = self.attack_speed
 
     """
@@ -33,9 +35,14 @@ class CombatLogic:
         in_range = self._get_targets_in_range(candidates)
 
         if not in_range:
-            return None
+            return []
 
-        return self.select_targets(in_range)
+        selected = self.select_targets(in_range)
+
+        if not isinstance(selected, list):
+            raise TypeError("select_targets() must return a list")
+
+        return selected
 
     def _get_targets_in_range(self, candidates):
         valid = []
@@ -45,6 +52,13 @@ class CombatLogic:
             if self._is_in_range(target):
                 valid.append(target)
         return valid
+
+    def _validate_current_targets(self):
+        cleaned = []
+        for target in self._current_targets:
+            if self._is_valid_target(target) and self._is_in_range(target):
+                cleaned.append(target)
+        self._current_targets = cleaned
 
     def _is_valid_target(self, target):
         if not target:
@@ -68,29 +82,3 @@ class CombatLogic:
         range_pixels = self.range * tile_size
 
         return distance_pixels <= range_pixels
-
-    def perform_attack(self, targets):
-        if not isinstance(targets, list):
-            targets = [targets]
-        for t in targets:
-            self._deal_damage(t)
-
-    def _deal_damage(self, target):
-        effective_armor = max(target.armor - self.armor_pierce, 0)
-
-        damage_after_armor = self.damage * (1 - effective_armor)
-        target.health -= damage_after_armor
-
-        if target.health <= 0:
-            target.health = 0
-            if hasattr(target, "_alive"):
-                target._alive = False
-
-    """
-    Hooks WIP
-    """
-    def _get_potential_targets(self):
-        pass
-
-    def select_targets(self, candidates):
-        pass

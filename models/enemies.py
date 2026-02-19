@@ -2,7 +2,6 @@
 This file is for handling all enemy logic
 """
 
-import time
 import math
 import os
 import pygame
@@ -52,7 +51,6 @@ class Enemy(CombatLogic):
     Game / Initiate Section
     """
     #Pulls info from ENEMIES
-    #ENEMIES stores all info from enemies.json, and is stored in constants to lower json reading
     def set_stats(self):
         enemy_data = ENEMIES[self._key]
         self.name = enemy_data['name']
@@ -130,6 +128,12 @@ class Enemy(CombatLogic):
     def destroy_enemy(self):
         SETTINGS['Essence'] += self.essence
         SETTINGS['Scrap'] += self.scrap
+
+        if self.carrying_gold and not self._gold_dropped:
+            drop_tile = self.get_drop_tile()
+            self.game.drop_gold(drop_tile, 1)
+            self._gold_dropped = True
+
         self._alive = False
 
     #Escaped trigger
@@ -141,8 +145,9 @@ class Enemy(CombatLogic):
 
     #Damage trigger
     def deal_damage(self, target):
-        effective_armor = target.armor * (1 - self.armor_pierce)
-        damage_dealt = max(self.damage - effective_armor, 0)
+        effective_armor = max(target.armor - self.armor_pierce, 0)
+        reduction = min(effective_armor, 100) / 100
+        damage_dealt = self.damage * (1 - reduction)
         target.take_damage(damage_dealt)
 
     #Receive damage trigger
@@ -150,34 +155,6 @@ class Enemy(CombatLogic):
         self.health -= damage_taken
         if self.health <= 0:
             self.destroy_enemy()
-
-    #Checks distance from target
-    def distance_to(self, target):
-        return math.hypot(target.x - self.x, target.y - self.y)
-
-    #Decides closest tower target
-    def get_closest_tower_in_range(self, towers):
-        closest = None
-        min_distance = float('inf')
-
-        for tower in towers:
-            if not isinstance(tower, Tower):
-                continue
-            dist = self.distance_to(tower)
-            if dist <= self.range and dist < min_distance:
-                closest = tower
-                min_distance = dist
-        return closest
-
-    #Attack trigger
-    def attack_closest_tower(self, enemies):
-        now = time.time()
-        if now - self._last_attack < self.attack_speed:
-            return
-        target = self.get_closest_tower_in_range(enemies)
-        if target:
-            self.deal_damage(target)
-            self._last_attack = now
 
     #Takes gold from the pile
     def take_gold(self):
@@ -188,6 +165,22 @@ class Enemy(CombatLogic):
         self.carrying_gold = True
         self._path_direction = -1
         self.state = AdventurerState.CARRYING_GOLD
+
+    #Assigns targetables
+    def _get_potential_targets(self):
+        return self.game.towers
+
+    #Selects the target to attack
+    def select_targets(self, candidates):
+        if not candidates:
+            return []
+        closest = min(candidates, key=lambda t: math.hypot(self.x - t.x, self.y - t.y))
+        return [closest]
+
+    #Attack function
+    def attack(self, targets):
+        for target in targets:
+            self.deal_damage(target)
 
     """
     Movement Logic

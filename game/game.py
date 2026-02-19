@@ -25,6 +25,7 @@ class Game:
         self.map_data = map_data
         self.enemies = []
         self.towers = []
+        self.projectiles = []
         self.gold_drops = {}
         self.stored_gold = SETTINGS['Max Gold']
         self._blocked_tiles = set(tuple(tile) for tile in map_data["path"])
@@ -54,8 +55,10 @@ class Game:
     """
 
     def update(self, dt):
+        #Enemy Logic
         for enemy in self.enemies:
             enemy.move_along_path(self.map_data, dt)
+            enemy.update_combat(dt)
 
             if enemy._alive and not enemy.carrying_gold:
                 tile = enemy.get_current_tile()
@@ -77,7 +80,25 @@ class Game:
                 self.drop_gold(drop_tile, 1)
                 enemy._gold_dropped = True
 
+        #Tower Logic
+        for tower in self.towers:
+            if tower._alive:
+                tower.update_combat(dt)
+            else:
+                if tower._current_timer <= 0:
+                    tower.revive_tower()
+                else:
+                    tower._current_timer -= dt
+
+        #Projectile Logic
+        for projectile in self.projectiles[:]:
+            projectile.update(dt)
+            if not projectile._alive:
+                self.projectiles.remove(projectile)
+
+        #Cleanup Nonactive
         self.enemies = [e for e in self.enemies if e._alive]
+        self.towers = [t for t in self.towers if not t._sold]
 
     def draw(self, screen):
         #Draw Coins
@@ -98,6 +119,8 @@ class Game:
             tower.draw(screen)
         for enemy in self.enemies:
             enemy.draw(screen)
+        for projectile in self.projectiles:
+            projectile.draw(screen)
 
     """
     Tile Logic
