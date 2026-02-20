@@ -2,12 +2,11 @@
 This file handles the game play logic on the offensive towers
 """
 
-import time
-import math
 import os
 import pygame
 
 from collections import deque
+from functions.combat import CombatLogic
 from gameconfig import (
     TOWERS,
     SETTINGS,
@@ -17,15 +16,22 @@ from constants import (
     MIN_ATTACK_SPEED,
     UPGRADE_MODIFIER
 )
+from models.projectile import Projectile
 
 _TOWER_ASSET_CACHE = {}
 
+priority_order = [
+    "CARRYING_GOLD",
+    "GOING_TO_GOLD",
+    "RETURNING_TO_EXIT"
+]
+
 #Tower storage class
-class Tower:
+class Tower(CombatLogic):
     def __init__(self, game, key, col, row):
+        CombatLogic.__init__(self)
         self.game = game
         self._key = key
-        self._last_attack = 0
         self.col = col
         self.row = row
         self.set_stats()
@@ -51,11 +57,18 @@ class Tower:
         self.name = f"{self._key} Tower {self.num}"
         self.health = tower_data['default_health']
         self.max_health = tower_data['default_health']
-        self.armor = tower_data['default_armor']
+        if tower_data['default_armor'] >= 100:
+            self.armor = 100.0
+        else:
+            self.armor = tower_data['default_armor']
         self.damage = tower_data['default_damage']
-        self.armor_pierce = tower_data['default_armor_pierce'] * 0.01
+        self.armor_pierce = tower_data['default_armor_pierce']
         self.range = tower_data['default_range']
         self.attack_speed = tower_data['default_attack_speed']
+        self._respawn_timer = tower_data['default_respawn_timer']
+        self._current_timer = self._respawn_timer
+        self._alive = True
+        self._sold = False
 
         #Costs
         self.cost = tower_data['default_cost']
@@ -87,56 +100,82 @@ class Tower:
         rect = self._asset.get_rect(center=(self.x, self.y))
         screen.blit(self._asset, rect)
 
+        if self.health <= 0:
+            return
+
+        BAR_HEIGHT = 6
+        BAR_PADDING = 2
+
+        bar_width = rect.width
+        bar_x = rect.left
+        bar_y = rect.top - BAR_HEIGHT - BAR_PADDING
+
+        # Health ratio
+        health_ratio = max(self.health / self.max_health, 0)
+
+        # Background
+        bg_rect = pygame.Rect(bar_x, bar_y, bar_width, BAR_HEIGHT)
+        pygame.draw.rect(screen, (0, 0, 0), bg_rect)
+
+        # Health fill
+        fill_width = int(bar_width * health_ratio)
+        if fill_width > 0:
+            fill_rect = pygame.Rect(bar_x, bar_y, fill_width, BAR_HEIGHT)
+            pygame.draw.rect(screen, (200, 0, 0), fill_rect)
+
+        # Border
+        pygame.draw.rect(screen, (255, 255, 255), bg_rect, 1)
+
     """
     Combat Logic
     """
-    #Death trigger
-    def destroy_tower(self):
-        tower_data = TOWERS[self._key]
-        tower_data['reuse_list'].append(self.num)
-        pass
-
-    #Damage trigger, calculating for armor pierce
-    def deal_damage(self, target):
-        effective_armor = target.armor * (1 - self.armor_pierce)
-        damage_dealt = max(self.damage - effective_armor, 0)
-        target.take_damage(damage_dealt)
-
     #Receiving damage trigger
     def take_damage(self, damage_taken):
         self.health -= damage_taken
         if self.health <= 0:
-            self.destroy_tower()
+            self._alive = False
 
-    # Checks distance to target
-    def distance_to(self, target):
-        return math.hypot(target.x - self.x, target.y - self.y)
+    def _get_potential_targets(self):
+        return self.game.enemies
 
-    # Checks closest target to attack
-    def get_closest_enemy_in_range(self, enemies):
-        closest = None
-        min_distance = float('inf')
+    def select_targets(self, candidates):
+        from models.enemies import AdventurerState
+        if not candidates:
+            return []
 
-        for enemy in enemies:
-            if not hasattr(enemy, "x") or not hasattr(enemy, "take_damage"):
-                continue
+        for state_name in priority_order:
+            state_enum = getattr(AdventurerState, state_name)
+            filtered = [e for e in candidates if e.state == state_enum]
+            if filtered:
+                front_most = max(filtered, key=lambda e: (e.path_index * e._path_direction))
+                return [front_most]
+        return [candidates[0]]
 
-            dist = self.distance_to(enemy)
-            if dist <= self.range and dist < min_distance:
-                closest = enemy
-                min_distance = dist
+    def attack(self, targets):
+        for target in targets:
+            if self.range <= 1:
+                self._deal_damage(target)
+            else:
+                projectile = Projectile(
+                    game=self.game,
+                    start_x=self.x,
+                    start_y=self.y,
+                    target=target,
+                    damage_callback=self._deal_damage,
+                    speed=800
+                )
+                self.game.projectiles.append(projectile)
 
-        return closest
+    def _deal_damage(self, target):
+        effective_armor = max(target.armor - self.armor_pierce, 0)
+        reduction = min(effective_armor, 100) / 100
+        damage = self.damage * (1 - reduction)
+        target.take_damage(damage)
 
-    # Attack trigger
-    def attack_closest_enemy(self, enemies):
-        now = time.time()
-        if now - self._last_attack < self.attack_speed:
-            return
-        target = self.get_closest_enemy_in_range(enemies)
-        if target:
-            self.deal_damage(target)
-            self._last_attack = now
+    def revive_tower(self):
+        self.health = self.max_health
+        self._current_timer = self._respawn_timer
+        self._alive = True
 
     """
     Maintenance Logic
@@ -144,6 +183,7 @@ class Tower:
     #Sell tower for some gold back
     def sell_tower(self):
         SETTINGS['Gold'] += self.cost * (UPGRADES['Sellback Mod'] * 0.01)
+        self._sold = True
 
     #Upgrades the tower's stats
     def upgrade_tower(self):

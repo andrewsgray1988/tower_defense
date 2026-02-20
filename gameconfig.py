@@ -21,6 +21,7 @@ MAPS = load_json("maps.json")
 GAME_STATE = "menu"
 RUNNING = False
 TOWER_CHOICES = ["Sword", "Archer"]
+WAVE_MODIFIER = SETTINGS["Wave Modifier"]
 
 #Periodically saves the JSONs to keep data
 def save_all_jsons():

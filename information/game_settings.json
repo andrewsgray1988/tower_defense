@@ -4,5 +4,6 @@
     "Essence": 0.0,
     "Max Gold": 10,
     "Current Gold": 10,
-    "Stolen Gold": 0
+    "Stolen Gold": 0,
+    "Wave Modifier": 1.0
 }
