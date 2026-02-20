@@ -4,6 +4,7 @@ This file handles the game play logic for enemy and tower placement
 
 import pygame
 import os
+import random
 
 from enum import Enum
 from models.enemies import Fighter
@@ -14,7 +15,8 @@ from functions.mapgeneration import (
 )
 from gameconfig import (
     SETTINGS,
-    TOWERS
+    TOWERS,
+    ENEMY_LIST
 )
 
 #Asset Storage, to reduce multiple loads for the same asset
@@ -45,6 +47,8 @@ class Game:
         self.tile_width = map_data["scaled_width"] / map_data["columns"]
         self.tile_height = map_data["scaled_height"] / map_data["rows"]
         self.tile_size = int(min(self.tile_width, self.tile_height))
+        self._wait_time = 20
+        self.wave_count = 10
 
         global _COIN_ASSET
         if _COIN_ASSET is None:
@@ -107,6 +111,19 @@ class Game:
             projectile.update(dt)
             if not projectile._alive:
                 self.projectiles.remove(projectile)
+
+        if self._wait_time <= 0 and self.wave_count > 0:
+            spawned_enemy = random.choice(ENEMY_LIST)
+            new_time = random.randint(3, 10)
+            self._wait_time = new_time
+            self.spawn_enemy(spawned_enemy)
+            self.wave_count -= 1
+        elif self._wait_time <= 0 and self.wave_count <= 0:
+            SETTINGS["Wave"] += 1
+            self._wait_time = 10
+            self.wave_count = 10
+        elif self._wait_time > 0:
+            self._wait_time -= dt
 
         #Cleanup Nonactive
         self.enemies = [e for e in self.enemies if e._alive]
@@ -231,6 +248,10 @@ class Game:
         self.towers.append(tower)
         self.set_tile_state(col, row, TileState.TOWER)
         return True
+
+    def get_tower_at(self, col, row):
+        tower_dict = {(t.col, t.row): t for t in self.towers}
+        return tower_dict.get((col, row))
 
     """
     Debug Features

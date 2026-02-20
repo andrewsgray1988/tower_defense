@@ -1,6 +1,6 @@
 {
     "Sword": {
-        "max": 23,
+        "max": 1,
         "asset": "towers/Sword.png",
         "reuse_list": [],
         "default_health": 10.0,
@@ -19,7 +19,7 @@
         "default_upgrade_cost_multiplier": 1.5
     },
     "Archer": {
-        "max": 16,
+        "max": 1,
         "asset": "towers/Archer.png",
         "reuse_list": [],
         "default_health": 10.0,

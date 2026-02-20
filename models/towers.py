@@ -36,6 +36,7 @@ class Tower(CombatLogic):
         self.row = row
         self.set_stats()
         self._initialize_position_and_asset()
+        self._font = pygame.font.SysFont(None, 16)
 
     """
     Game / Initiate Section
@@ -69,9 +70,11 @@ class Tower(CombatLogic):
         self._current_timer = self._respawn_timer
         self._alive = True
         self._sold = False
+        self.level = 1
 
         #Costs
         self.cost = tower_data['default_cost']
+        self.sell_amount = self.cost * SETTINGS["Sell Multiplier"]
         self.upgrade_cost = tower_data['default_upgrade_cost']
 
         #Multipliers
@@ -126,6 +129,18 @@ class Tower(CombatLogic):
         # Border
         pygame.draw.rect(screen, (255, 255, 255), bg_rect, 1)
 
+        # Tower Number
+        num_surface = self._font.render(str(self.num), True, (255, 255, 255))
+        num_rect = num_surface.get_rect()
+        num_rect.bottomleft = (rect.left + 4, rect.bottom - 2)
+        screen.blit(num_surface, num_rect)
+
+        # Tower Level
+        level_surface = self._font.render(str(self.level), True, (255, 255, 0))
+        level_rect = level_surface.get_rect()
+        level_rect.bottomright = (rect.right - 4, rect.bottom - 2)
+        screen.blit(level_surface, level_rect)
+
     """
     Combat Logic
     """
@@ -153,18 +168,16 @@ class Tower(CombatLogic):
 
     def attack(self, targets):
         for target in targets:
-            if self.range <= 1:
-                self._deal_damage(target)
-            else:
-                projectile = Projectile(
-                    game=self.game,
-                    start_x=self.x,
-                    start_y=self.y,
-                    target=target,
-                    damage_callback=self._deal_damage,
-                    speed=800
-                )
-                self.game.projectiles.append(projectile)
+            projectile = Projectile(
+                game=self.game,
+                start_x=self.x,
+                start_y=self.y,
+                target=target,
+                damage_callback=self._deal_damage,
+                speed=800,
+                range=self.range
+            )
+            self.game.projectiles.append(projectile)
 
     def _deal_damage(self, target):
         effective_armor = max(target.armor - self.armor_pierce, 0)
@@ -188,13 +201,16 @@ class Tower(CombatLogic):
     #Upgrades the tower's stats
     def upgrade_tower(self):
         health_num = max(self.max_health * self._health_multiplier, 1) #Sets up health modifier
-        self.cost += (self.upgrade_cost * UPGRADE_MODIFIER) #Updates the cost based off upgrade cost, to calculate total cost
+        new_cost_amount = self.upgrade_cost * UPGRADE_MODIFIER
+        self.cost += new_cost_amount #Updates the cost based off upgrade cost, to calculate total cost
+        self.sell_amount += new_cost_amount * SETTINGS["Sell Multiplier"]
         self.health += health_num #Only heals the amount gained rather than heal to full
         self.max_health += health_num
         self.armor *= self._armor_multiplier
         self.damage *= self._damage_multiplier
         self.attack_speed = max(self.attack_speed * self._attack_speed_multiplier, MIN_ATTACK_SPEED) #Caps attack speed
         self.upgrade_cost *= self._upgrade_cost_multiplier
+        self.level += 1
 
 """
 Individual Tower Types and their unique features
