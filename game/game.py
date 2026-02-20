@@ -5,6 +5,7 @@ This file handles the game play logic for enemy and tower placement
 import pygame
 import os
 
+from enum import Enum
 from models.enemies import Fighter
 from models.towers import Sword, Archer
 from functions.mapgeneration import (
@@ -19,6 +20,11 @@ from gameconfig import (
 #Asset Storage, to reduce multiple loads for the same asset
 _COIN_ASSET = None
 
+class TileState(Enum):
+    PATH = 1
+    BUILDABLE = 2
+    TOWER = 3
+
 #Game storage class
 class Game:
     def __init__(self, map_data):
@@ -28,8 +34,14 @@ class Game:
         self.projectiles = []
         self.gold_drops = {}
         self.stored_gold = SETTINGS['Max Gold']
-        self._blocked_tiles = set(tuple(tile) for tile in map_data["path"])
-        self._tower_tiles = set()
+        self.tile_states = {}
+        # Initialize entire grid as BUILDABLE first
+        for col in range(map_data["columns"]):
+            for row in range(map_data["rows"]):
+                self.tile_states[(col, row)] = TileState.BUILDABLE
+        # Overwrite path tiles
+        for tile in map_data["path"]:
+            self.tile_states[tuple(tile)] = TileState.PATH
         self.tile_width = map_data["scaled_width"] / map_data["columns"]
         self.tile_height = map_data["scaled_height"] / map_data["rows"]
         self.tile_size = int(min(self.tile_width, self.tile_height))
@@ -142,6 +154,12 @@ class Game:
     def get_tile_size(self):
         return self.tile_width, self.tile_height
 
+    def get_tile_state(self, col, row):
+        return self.tile_states.get((col, row))
+
+    def set_tile_state(self, col, row, state):
+        self.tile_states[(col, row)] = state
+
     """
     Enemy Logic
     """
@@ -186,14 +204,9 @@ class Game:
         )
 
     def is_tile_buildable(self, col, row):
-        return (
-            self.is_tile_in_bounds(col, row)
-            and (col, row) not in self._blocked_tiles
-            and (col, row) not in self._tower_tiles
-        )
-
-    def register_tower_tile(self, col, row):
-        self._tower_tiles.add((col, row))
+        if not self.is_tile_in_bounds(col, row):
+            return False
+        return self.get_tile_state(col, row) == TileState.BUILDABLE
 
     def place_tower(self, tower_key, col, row):
         if not self.is_tile_buildable(col, row):
@@ -215,10 +228,8 @@ class Game:
                 return False
 
         SETTINGS["Scrap"] -= cost
-
         self.towers.append(tower)
-        self.register_tower_tile(col, row)
-
+        self.set_tile_state(col, row, TileState.TOWER)
         return True
 
     """
