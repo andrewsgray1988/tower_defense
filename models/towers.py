@@ -36,10 +36,12 @@ class Tower(CombatLogic):
         self.row = row
         self.set_stats()
         self._initialize_position_and_asset()
+        self._font = pygame.font.SysFont(None, 16)
 
     """
     Game / Initiate Section
     """
+    #Sets initial stats from JSON files
     def set_stats(self):
         tower_data = TOWERS[self._key]
         reuse_queue = deque(sorted(tower_data['reuse_list']))
@@ -69,9 +71,11 @@ class Tower(CombatLogic):
         self._current_timer = self._respawn_timer
         self._alive = True
         self._sold = False
+        self.level = 1
 
         #Costs
         self.cost = tower_data['default_cost']
+        self.sell_amount = self.cost * SETTINGS["Sell Multiplier"]
         self.upgrade_cost = tower_data['default_upgrade_cost']
 
         #Multipliers
@@ -81,6 +85,7 @@ class Tower(CombatLogic):
         self._attack_speed_multiplier = tower_data['default_attack_speed_multiplier']
         self._upgrade_cost_multiplier = tower_data['default_upgrade_cost_multiplier']
 
+    #Records position and visual asset
     def _initialize_position_and_asset(self):
         tower_data = TOWERS[self._key]
         asset_path = tower_data['asset']
@@ -96,12 +101,10 @@ class Tower(CombatLogic):
 
         self.x, self.y = self.game.get_tile_center(self.col, self.row)
 
+    #Draws the tower onto the screen
     def draw(self, screen):
         rect = self._asset.get_rect(center=(self.x, self.y))
         screen.blit(self._asset, rect)
-
-        if self.health <= 0:
-            return
 
         BAR_HEIGHT = 6
         BAR_PADDING = 2
@@ -110,21 +113,39 @@ class Tower(CombatLogic):
         bar_x = rect.left
         bar_y = rect.top - BAR_HEIGHT - BAR_PADDING
 
-        # Health ratio
-        health_ratio = max(self.health / self.max_health, 0)
-
-        # Background
+        #Bar Background
         bg_rect = pygame.Rect(bar_x, bar_y, bar_width, BAR_HEIGHT)
         pygame.draw.rect(screen, (0, 0, 0), bg_rect)
 
-        # Health fill
-        fill_width = int(bar_width * health_ratio)
+        if self.health > 0 and self._alive:
+            #Health ratio
+            bar_ratio = max(self.health / self.max_health, 0)
+            fill_color = (200, 0, 0)
+
+        elif self.health <= 0 and not self._alive:
+            #Recharge ratio
+            bar_ratio = max(1 - (self._current_timer / self._respawn_timer), 0)
+            fill_color = (0, 200 ,255)
+
+        fill_width = int(bar_width * bar_ratio)
         if fill_width > 0:
             fill_rect = pygame.Rect(bar_x, bar_y, fill_width, BAR_HEIGHT)
-            pygame.draw.rect(screen, (200, 0, 0), fill_rect)
+            pygame.draw.rect(screen, fill_color, fill_rect)
 
-        # Border
+        #Bar Border
         pygame.draw.rect(screen, (255, 255, 255), bg_rect, 1)
+
+        #Tower Number
+        num_surface = self._font.render(str(self.num), True, (255, 255, 255))
+        num_rect = num_surface.get_rect()
+        num_rect.bottomleft = (rect.left + 4, rect.bottom - 2)
+        screen.blit(num_surface, num_rect)
+
+        #Tower Level
+        level_surface = self._font.render(str(self.level), True, (255, 255, 0))
+        level_rect = level_surface.get_rect()
+        level_rect.bottomright = (rect.right - 4, rect.bottom - 2)
+        screen.blit(level_surface, level_rect)
 
     """
     Combat Logic
@@ -135,9 +156,11 @@ class Tower(CombatLogic):
         if self.health <= 0:
             self._alive = False
 
+    #Checks for enemies as targets
     def _get_potential_targets(self):
         return self.game.enemies
 
+    #Prioritizes Adventurer states
     def select_targets(self, candidates):
         from models.enemies import AdventurerState
         if not candidates:
@@ -151,27 +174,28 @@ class Tower(CombatLogic):
                 return [front_most]
         return [candidates[0]]
 
+    #Attack trigger
     def attack(self, targets):
         for target in targets:
-            if self.range <= 1:
-                self._deal_damage(target)
-            else:
-                projectile = Projectile(
-                    game=self.game,
-                    start_x=self.x,
-                    start_y=self.y,
-                    target=target,
-                    damage_callback=self._deal_damage,
-                    speed=800
-                )
-                self.game.projectiles.append(projectile)
+            projectile = Projectile(
+                game=self.game,
+                start_x=self.x,
+                start_y=self.y,
+                target=target,
+                damage_callback=self._deal_damage,
+                speed=800,
+                range=self.range
+            )
+            self.game.projectiles.append(projectile)
 
+    #Deal damage trigger
     def _deal_damage(self, target):
         effective_armor = max(target.armor - self.armor_pierce, 0)
         reduction = min(effective_armor, 100) / 100
         damage = self.damage * (1 - reduction)
         target.take_damage(damage)
 
+    #Tower revival logic
     def revive_tower(self):
         self.health = self.max_health
         self._current_timer = self._respawn_timer
@@ -180,7 +204,7 @@ class Tower(CombatLogic):
     """
     Maintenance Logic
     """
-    #Sell tower for some gold back
+    #Sell tower for some scrap back
     def sell_tower(self):
         SETTINGS['Gold'] += self.cost * (UPGRADES['Sellback Mod'] * 0.01)
         self._sold = True
@@ -188,13 +212,16 @@ class Tower(CombatLogic):
     #Upgrades the tower's stats
     def upgrade_tower(self):
         health_num = max(self.max_health * self._health_multiplier, 1) #Sets up health modifier
-        self.cost += (self.upgrade_cost * UPGRADE_MODIFIER) #Updates the cost based off upgrade cost, to calculate total cost
+        new_cost_amount = self.upgrade_cost * UPGRADE_MODIFIER
+        self.cost += new_cost_amount #Updates the cost based off upgrade cost, to calculate total cost
+        self.sell_amount += new_cost_amount * SETTINGS["Sell Multiplier"]
         self.health += health_num #Only heals the amount gained rather than heal to full
         self.max_health += health_num
         self.armor *= self._armor_multiplier
         self.damage *= self._damage_multiplier
         self.attack_speed = max(self.attack_speed * self._attack_speed_multiplier, MIN_ATTACK_SPEED) #Caps attack speed
         self.upgrade_cost *= self._upgrade_cost_multiplier
+        self.level += 1
 
 """
 Individual Tower Types and their unique features

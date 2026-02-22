@@ -12,7 +12,7 @@ class CombatLogic:
 
     #Combat checks
     def update_combat(self, dt):
-        #Processes cooldown timer
+        #Reduces attack timer if they've already attacked
         if self._attack_timer > 0:
             self._attack_timer -= dt
 
@@ -22,7 +22,7 @@ class CombatLogic:
         if not self._current_targets:
             self._current_targets = self._acquire_targets()
 
-        #Attempt attack
+        #Attacks if successful
         if self._current_targets and self._attack_timer <= 0:
             self.attack(self._current_targets)
             self._attack_timer = self.attack_speed
@@ -30,6 +30,7 @@ class CombatLogic:
     """
     Targeting Logic
     """
+    #Sets up target list
     def _acquire_targets(self):
         candidates = self._get_potential_targets()
         in_range = self._get_targets_in_range(candidates)
@@ -44,6 +45,7 @@ class CombatLogic:
 
         return selected
 
+    #Checks for possible targets in range
     def _get_targets_in_range(self, candidates):
         valid = []
         for target in candidates:
@@ -53,6 +55,7 @@ class CombatLogic:
                 valid.append(target)
         return valid
 
+    #Takes out targets that can't be used
     def _validate_current_targets(self):
         cleaned = []
         for target in self._current_targets:
@@ -60,6 +63,7 @@ class CombatLogic:
                 cleaned.append(target)
         self._current_targets = cleaned
 
+    #Checks if the target is valid
     def _is_valid_target(self, target):
         if not target:
             return False
@@ -72,6 +76,7 @@ class CombatLogic:
     """
     Range Logic
     """
+    #Checks to see if target is within range
     def _is_in_range(self, target):
         tile_size = self.game.tile_size
 

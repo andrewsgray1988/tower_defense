@@ -11,6 +11,7 @@ import sys
 from functions.mapgeneration import pixel_to_grid
 from gameconfig import (
     SETTINGS,
+    TOWERS,
     save_all_jsons
 )
 
@@ -32,11 +33,13 @@ def debug_window(spawn_enemy_callback, kill_enemy_callback):
         SETTINGS['Essence'] = 0.0
         SETTINGS['Current Gold'] = SETTINGS['Max Gold']
         SETTINGS['Stolen Gold'] = 0
+        for tower_key, tower_data in TOWERS.items():
+            tower_data["max"] = 1
         save_all_jsons()
 
-        root.destroy()
         constants.RUNNING = False
         pygame.quit()
+        root.destroy()
         sys.exit()
 
     root = tk.Tk()
