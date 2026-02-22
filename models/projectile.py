@@ -6,6 +6,7 @@ import math
 import os
 import pygame
 
+#Asset cache to prevent multiple loads
 _PROJECTILE_ASSET_CACHE = {}
 
 #Initiates the projectile
@@ -27,10 +28,12 @@ class Projectile:
         if asset_path not in _PROJECTILE_ASSET_CACHE:
             full_path = os.path.join("assets", asset_path)
             image = pygame.image.load(full_path).convert_alpha()
-            _PROJECTILE_ASSET_CACHE[asset_path] = image
+            scaled_image = pygame.transform.smoothscale(image, (image.get_width() * 2, image.get_height() * 2))
+            _PROJECTILE_ASSET_CACHE[asset_path] = scaled_image
 
         self._asset = _PROJECTILE_ASSET_CACHE[asset_path]
 
+    #Update logic as projectile exists
     def update(self, dt):
         if not self._alive or not self.target or not self.target._alive:
             self._alive = False
@@ -54,6 +57,7 @@ class Projectile:
             self.x += dx / distance * move_distance
             self.y += dy / distance * move_distance
 
+    #Draws the projectile image
     def draw(self, screen):
         rect = self._asset.get_rect(center=(self.x, self.y))
         screen.blit(self._asset, rect)

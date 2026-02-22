@@ -5,6 +5,8 @@ This file is general functions - functions that may be used universally for gene
 import os
 import json
 import threading
+import pygame
+import sys
 
 #Sets up the JSON load path
 BASE_DIR = os.path.dirname(os.path.dirname(__file__))
@@ -27,3 +29,30 @@ def periodic_save(save_func, interval=30):
     t = threading.Timer(interval, periodic_save, args=(save_func,))
     t.daemon = True
     t.start()
+
+#Closes the whole program
+def close_program():
+    import constants
+    reset_jsons()
+
+    constants.RUNNING = False
+    pygame.quit()
+    sys.exit()
+
+#Resets all settings and JSONS to default
+def reset_jsons():
+    from gameconfig import (
+        SETTINGS,
+        TOWERS,
+        save_all_jsons
+    )
+    SETTINGS['Wave'] = 1
+    SETTINGS['Scrap'] = 200
+    SETTINGS['Essence'] = 0.0
+    SETTINGS['Current Gold'] = SETTINGS['Max Gold']
+    SETTINGS['Stolen Gold'] = 0
+    SETTINGS["Wait Time"] = 20
+    SETTINGS["Wave Count"] = 10
+    for tower_key, tower_data in TOWERS.items():
+        tower_data["max"] = 1
+    save_all_jsons()

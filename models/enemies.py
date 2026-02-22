@@ -12,8 +12,8 @@ from gameconfig import (
     SETTINGS,
     WAVE_MODIFIER
 )
-from models.towers import Tower
 from functions.combat import CombatLogic
+from models.projectile import Projectile
 
 #Asset Storage, to reduce multiple loads for the same asset
 _ENEMY_ASSET_CACHE = {}
@@ -66,7 +66,7 @@ class Enemy(CombatLogic):
         self.move_speed = enemy_data['default_move_speed']
         self._alive = True
 
-
+    #Visual representation of the enemy
     def _initialize_visuals(self):
         enemy_data = ENEMIES[self._key]
         asset_path = enemy_data['asset']
@@ -144,7 +144,7 @@ class Enemy(CombatLogic):
         self._escaped = True
 
     #Damage trigger
-    def deal_damage(self, target):
+    def _deal_damage(self, target):
         effective_armor = max(target.armor - self.armor_pierce, 0)
         reduction = min(effective_armor, 100) / 100
         damage_dealt = self.damage * (1 - reduction)
@@ -180,7 +180,16 @@ class Enemy(CombatLogic):
     #Attack function
     def attack(self, targets):
         for target in targets:
-            self.deal_damage(target)
+            projectile = Projectile(
+                game=self.game,
+                start_x=self.x,
+                start_y=self.y,
+                target=target,
+                damage_callback=self._deal_damage,
+                speed=800,
+                range=self.range
+            )
+            self.game.projectiles.append(projectile)
 
     """
     Movement Logic

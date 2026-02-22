@@ -18,10 +18,14 @@ from gameconfig import (
     TOWERS,
     ENEMY_LIST
 )
+from functions.general import (
+    reset_jsons
+)
 
 #Asset Storage, to reduce multiple loads for the same asset
 _COIN_ASSET = None
 
+#Sets up Enum states for the Tiles
 class TileState(Enum):
     PATH = 1
     BUILDABLE = 2
@@ -47,8 +51,8 @@ class Game:
         self.tile_width = map_data["scaled_width"] / map_data["columns"]
         self.tile_height = map_data["scaled_height"] / map_data["rows"]
         self.tile_size = int(min(self.tile_width, self.tile_height))
-        self._wait_time = 20
-        self.wave_count = 10
+        self._wait_time = SETTINGS['Wait Time']
+        self.wave_count = SETTINGS['Wave Count']
 
         global _COIN_ASSET
         if _COIN_ASSET is None:
@@ -69,13 +73,18 @@ class Game:
     """
     Game Logic
     """
-
+    #Update checks for the game in progress
     def update(self, dt):
-        #Enemy Logic
+        import gameconfig
+        """
+        Enemy Logic
+        """
+        #Enemy Move Logic
         for enemy in self.enemies:
             enemy.move_along_path(self.map_data, dt)
             enemy.update_combat(dt)
 
+            #Enemy arrives at end of path
             if enemy._alive and not enemy.carrying_gold:
                 tile = enemy.get_current_tile()
                 if tile and self.has_gold_at(tile):
@@ -85,6 +94,7 @@ class Game:
                         enemy._path_direction = -1
                         enemy.state = enemy.state.RETURNING_TO_EXIT
 
+        #Enemy drops gold when killed
         for enemy in self.enemies:
             if (
                     not enemy._alive
@@ -96,7 +106,13 @@ class Game:
                 self.drop_gold(drop_tile, 1)
                 enemy._gold_dropped = True
 
-        #Tower Logic
+        #Cleanup enemies
+        self.enemies = [e for e in self.enemies if e._alive]
+
+        """
+        Tower Logic
+        """
+        #Tower Respawn Timer
         for tower in self.towers:
             if tower._alive:
                 tower.update_combat(dt)
@@ -106,29 +122,45 @@ class Game:
                 else:
                     tower._current_timer -= dt
 
-        #Projectile Logic
+        #Cleanup towers
+        self.towers = [t for t in self.towers if not t._sold]
+
+        """
+        Projectile Logic
+        """
+        #Update and clean up projectiles
         for projectile in self.projectiles[:]:
             projectile.update(dt)
             if not projectile._alive:
                 self.projectiles.remove(projectile)
 
+        """
+        Game Logic
+        """
+        #Wave and Spawn handler
         if self._wait_time <= 0 and self.wave_count > 0:
             spawned_enemy = random.choice(ENEMY_LIST)
             new_time = random.randint(3, 10)
             self._wait_time = new_time
+            SETTINGS["Wait Time"] = new_time
             self.spawn_enemy(spawned_enemy)
             self.wave_count -= 1
+            SETTINGS["Wave Count"] = self.wave_count
         elif self._wait_time <= 0 and self.wave_count <= 0:
             SETTINGS["Wave"] += 1
             self._wait_time = 10
             self.wave_count = 10
+            SETTINGS["Wave Count"] = self.wave_count
         elif self._wait_time > 0:
             self._wait_time -= dt
+            SETTINGS["Wait Time"] = self._wait_time
 
-        #Cleanup Nonactive
-        self.enemies = [e for e in self.enemies if e._alive]
-        self.towers = [t for t in self.towers if not t._sold]
+        #Gameover Trigger
+        if SETTINGS["Stolen Gold"] == SETTINGS["Max Gold"]:
+            reset_jsons()
+            gameconfig.GAME_STATE = "gameover"
 
+    #Draws the appropriate references on screen
     def draw(self, screen):
         #Draw Coins
         tile_width, tile_height = self.get_tile_size()
@@ -154,13 +186,16 @@ class Game:
     """
     Tile Logic
     """
+    #Checks screen to tile position
     def screen_to_tile(self, pos):
         x, y = pos
         return pixel_to_grid(x, y, self.map_data)
 
+    #Checks tile to screen position
     def tile_to_screen(self, col, row):
         return grid_to_pixel(col, row, self.map_data)
 
+    #Finds the center of the tile
     def get_tile_center(self, col, row):
         tile_width = self.map_data["scaled_width"] / self.map_data["columns"]
         tile_height = self.map_data["scaled_height"] / self.map_data["rows"]
@@ -168,18 +203,22 @@ class Game:
         y = self.map_data["draw_y"] + row * tile_height + tile_height / 2
         return x, y
 
+    #Finds the size of the tile
     def get_tile_size(self):
         return self.tile_width, self.tile_height
 
+    #Checks the Enum state of the tile
     def get_tile_state(self, col, row):
         return self.tile_states.get((col, row))
 
+    #Sets the Enum state of the tile
     def set_tile_state(self, col, row, state):
         self.tile_states[(col, row)] = state
 
     """
     Enemy Logic
     """
+    #Enemy Spawn cases
     def spawn_enemy(self, enemy_type):
         match enemy_type:
             case "Fighter":
@@ -212,7 +251,6 @@ class Game:
     """
     Tower Logic
     """
-
     #Make sure that the tiles are buildable and in bounds
     def is_tile_in_bounds(self, col, row):
         return (
@@ -220,11 +258,13 @@ class Game:
             and 0 <= row < self.map_data["rows"]
         )
 
+    #Checks to see if the tile is a buildable tile
     def is_tile_buildable(self, col, row):
         if not self.is_tile_in_bounds(col, row):
             return False
         return self.get_tile_state(col, row) == TileState.BUILDABLE
 
+    #Tower placement logic
     def place_tower(self, tower_key, col, row):
         if not self.is_tile_buildable(col, row):
             return False
@@ -249,6 +289,7 @@ class Game:
         self.set_tile_state(col, row, TileState.TOWER)
         return True
 
+    #Checks tower placed at selected tile
     def get_tower_at(self, col, row):
         tower_dict = {(t.col, t.row): t for t in self.towers}
         return tower_dict.get((col, row))

@@ -1,5 +1,7 @@
 {
     "Wave": 1,
+    "Wait Time": 20,
+    "Wave Count": 10,
     "Scrap": 200,
     "Essence": 0.0,
     "Max Gold": 10,

@@ -16,4 +16,4 @@ MIN_ATTACK_SPEED = 0.1
 UPGRADE_MODIFIER = 1.1
 
 #Initializes if Debug should be active or not
-DEBUG_MODE = True
+DEBUG_MODE = False

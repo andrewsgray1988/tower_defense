@@ -25,7 +25,9 @@ from functions.debugfunctions import (
     print_grid_position,
     debug_window
 )
-
+from functions.general import (
+    reset_jsons
+)
 from game.game import Game
 from game.ui import UIManager
 
@@ -43,6 +45,7 @@ def main():
     debug_thread_started = False
 
     gameconfig.RUNNING = True
+    reset_jsons()
 
     while gameconfig.RUNNING:
         dt = clock.tick(60) / 1000  # Delta time in seconds
@@ -52,7 +55,7 @@ def main():
                 gameconfig.RUNNING = False
 
             if event.type == pygame.KEYDOWN:
-                if gameconfig.GAME_STATE == "menu" and event.key == pygame.K_RETURN:
+                if (gameconfig.GAME_STATE == "menu" or gameconfig.GAME_STATE == "gameover") and event.key == pygame.K_RETURN:
                     # -------- LOAD MAP --------
                     current_map = load_map("Testmap")
 
@@ -111,12 +114,11 @@ def main():
             game.draw(screen)
             ui.draw(screen)
 
-            if DEBUG_MODE:
-                draw_grid(screen, current_map)
+            draw_grid(screen, current_map)
 
             font = pygame.font.SysFont(None, 24)
             gold_text = f"Max Gold: {SETTINGS['Max Gold']}  Current Gold: {SETTINGS['Current Gold']}  Stolen Gold: {SETTINGS['Stolen Gold']}"
-            wave_text = f"Wave: {SETTINGS['Wave']}"
+            wave_text = f"Wave: {SETTINGS['Wave']} Enemies Left: {SETTINGS['Wave Count']}  Time until Next Enemy: {int(SETTINGS['Wait Time'])}"
             scrap_text = f"Scrap: {int(SETTINGS['Scrap'])}  Essence: {int(SETTINGS['Essence'])}"
 
             gold_surface = font.render(gold_text, True, (255, 255, 0))
@@ -129,6 +131,11 @@ def main():
             screen.blit(wave_surface, (10, screeny))
             screeny += wave_surface.get_height() + 4
             screen.blit(scrap_surface, (10, screeny))
+
+        elif gameconfig.GAME_STATE == "gameover":
+            font = pygame.font.SysFont(None, 48)
+            text = font.render("Game Over. Press ENTER to Play Again", True, (255, 255, 255))
+            screen.blit(text, (200, 250))
 
         pygame.display.flip()
 

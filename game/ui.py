@@ -14,6 +14,7 @@ from constants import (
     BUILD_MENU_BUTTON_HEIGHT
 )
 from game.game import TileState
+from functions.general import close_program
 
 class UIManager:
     def __init__(self, game):
@@ -25,45 +26,58 @@ class UIManager:
         self.button_rects = {}
         self._selected_tower = None
         self._tower_menu_open = False
+        self.quit_button_rect = None
 
     """
     Input Logic
     """
-
+    #Click event handler
     def handle_event(self, event):
         if event.type == pygame.MOUSEBUTTONDOWN:
+            #Left click handler
             if event.button == 1:
                 self.handle_left_click(event.pos)
+            #Right click handler
             elif event.button == 3:  # right click
                 self.handle_right_click()
 
+    #Functions for the left click
     def handle_left_click(self, mouse_pos):
+        #Quit button handler
+        if self.quit_button_rect and self.quit_button_rect.collidepoint(mouse_pos):
+            close_program()
+            return
+        #Tile check
         col, row = self.game.screen_to_tile(mouse_pos)
         if col is None or row is None:
             return
 
-        # If build menu already open, handle menu clicks
+        #If build menu already open, handle menu clicks
         if self._build_menu_open:
             self.handle_build_menu_click(mouse_pos)
             return
 
+        #If Tower menu already open, handle menu clicks
         if self._tower_menu_open:
             self.handle_tower_menu_click(mouse_pos)
             return
 
         tile_state = self.game.get_tile_state(col, row)
 
-        #
+        """
+        Checks tile state to see how to handle next step on click
+        """
+        #If tile state is buildable, open the build menu
         if tile_state == TileState.BUILDABLE:
             self.open_build_menu(col, row)
 
+        #If the tile state is a tower, open the tower menu
         elif tile_state == TileState.TOWER:
             tower = self.game.get_tower_at(col, row)
-
             if tower:
                self.open_tower_menu(col, row, tower)
 
-
+    #Functions for the right click
     def handle_right_click(self):
         if self._build_menu_open:
             self.close_build_menu()
@@ -71,16 +85,18 @@ class UIManager:
     """
     Build Menu Logic
     """
-
+    #Open the Build Menu
     def open_build_menu(self, col, row):
         self._build_menu_open = True
         self._menu_tile = (col, row)
 
+    #Close the Build Menu
     def close_build_menu(self):
         self._build_menu_open = False
         self._menu_tile = None
         self.button_rects = {}
 
+    #Handlers for the Build Menu
     def handle_build_menu_click(self, mouse_pos):
         for tower_key, rect in self.button_rects.items():
             if rect.collidepoint(mouse_pos):
@@ -97,18 +113,20 @@ class UIManager:
     """
     Tower Menu Logic
     """
-
+    #Open the Tower Menu
     def open_tower_menu(self, col, row, tower):
         self._tower_menu_open = True
         self._selected_tower = tower
         self._menu_tile = (col, row)
 
+    #Close the Tower Menu
     def close_tower_menu(self):
         self._tower_menu_open = False
         self._selected_tower = None
         self._menu_tile = None
         self.button_rects = {}
 
+    #Handlers for the Tower Menu
     def handle_tower_menu_click(self, mouse_pos):
         for action, rect in self.button_rects.items():
             if rect.collidepoint(mouse_pos):
@@ -135,7 +153,7 @@ class UIManager:
     """
     Rendering
     """
-
+    #Logic that draw the menus on screen
     def draw(self, screen):
         if self._build_menu_open:
             self.draw_build_menu(screen)
@@ -143,6 +161,9 @@ class UIManager:
         elif self._tower_menu_open:
             self.draw_tower_menu(screen)
 
+        self.draw_quit_button(screen)
+
+    #Function that draws the build menu on screen
     def draw_build_menu(self, screen):
         col, row = self._menu_tile
         menu_x, menu_y = self.game.tile_to_screen(col, row)
@@ -177,6 +198,7 @@ class UIManager:
             )
             screen.blit(text, (rect.x + 8, rect.y + 8))
 
+    #Function that draws the tower menu on screen
     def draw_tower_menu(self, screen):
         tower = self._selected_tower
         if not tower:
@@ -219,3 +241,25 @@ class UIManager:
 
             text = self.font.render(label, True, text_color)
             screen.blit(text, (rect.x + 8, rect.y + 8))
+
+    """
+    Quit Button
+    """
+    #Function that draws the quit button on screen
+    def draw_quit_button(self, screen):
+        button_width = 120
+        button_height = 40
+        padding = 20
+
+        x = screen.get_width() - button_width - padding
+        y = screen.get_height() - button_height - padding
+
+        rect = pygame.Rect(x, y, button_width, button_height)
+        self.quit_button_rect = rect
+
+        pygame.draw.rect(screen, (120, 30, 30), rect)
+        pygame.draw.rect(screen, (255, 255, 255), rect, 2)
+
+        text = self.font.render("Quit", True, (255, 255, 255))
+        text_rect = text.get_rect(center=rect.center)
+        screen.blit(text, text_rect)
