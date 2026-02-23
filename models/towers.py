@@ -4,22 +4,19 @@ This file handles the game play logic on the offensive towers
 
 import os
 import pygame
+import gameconfig
 
 from collections import deque
 from functions.combat import CombatLogic
-from gameconfig import (
-    TOWERS,
-    SETTINGS,
-    UPGRADES
-)
 from constants import (
-    MIN_ATTACK_SPEED,
     UPGRADE_MODIFIER
 )
 from models.projectile import Projectile
 
+#Cache images to prevent multiple loads per tower
 _TOWER_ASSET_CACHE = {}
 
+#Sets priority list for targeting enemies
 priority_order = [
     "CARRYING_GOLD",
     "GOING_TO_GOLD",
@@ -43,6 +40,7 @@ class Tower(CombatLogic):
     """
     #Sets initial stats from JSON files
     def set_stats(self):
+        from gameconfig import TOWERS, SETTINGS
         tower_data = TOWERS[self._key]
         reuse_queue = deque(sorted(tower_data['reuse_list']))
 
@@ -57,15 +55,16 @@ class Tower(CombatLogic):
 
         #Base Stats
         self.name = f"{self._key} Tower {self.num}"
-        self.health = tower_data['default_health']
+        self._projectile_asset = tower_data['projectile_asset']
         self.max_health = tower_data['default_health']
+        self.health = self.max_health
         if tower_data['default_armor'] >= 100:
             self.armor = 100.0
         else:
             self.armor = tower_data['default_armor']
         self.damage = tower_data['default_damage']
         self.armor_pierce = tower_data['default_armor_pierce']
-        self.range = tower_data['default_range']
+        self.range = tower_data['default_range'] * 1.2
         self.attack_speed = tower_data['default_attack_speed']
         self._respawn_timer = tower_data['default_respawn_timer']
         self._current_timer = self._respawn_timer
@@ -80,13 +79,12 @@ class Tower(CombatLogic):
 
         #Multipliers
         self._health_multiplier = tower_data['default_health_multiplier']
-        self._armor_multiplier = tower_data['default_armor_multiplier']
         self._damage_multiplier = tower_data['default_damage_multiplier']
-        self._attack_speed_multiplier = tower_data['default_attack_speed_multiplier']
         self._upgrade_cost_multiplier = tower_data['default_upgrade_cost_multiplier']
 
     #Records position and visual asset
     def _initialize_position_and_asset(self):
+        from gameconfig import TOWERS
         tower_data = TOWERS[self._key]
         asset_path = tower_data['asset']
 
@@ -111,7 +109,7 @@ class Tower(CombatLogic):
 
         bar_width = rect.width
         bar_x = rect.left
-        bar_y = rect.top - BAR_HEIGHT - BAR_PADDING
+        bar_y = rect.top + BAR_PADDING
 
         #Bar Background
         bg_rect = pygame.Rect(bar_x, bar_y, bar_width, BAR_HEIGHT)
@@ -125,7 +123,7 @@ class Tower(CombatLogic):
         elif self.health <= 0 and not self._alive:
             #Recharge ratio
             bar_ratio = max(1 - (self._current_timer / self._respawn_timer), 0)
-            fill_color = (0, 200 ,255)
+            fill_color = (0, 200, 255)
 
         fill_width = int(bar_width * bar_ratio)
         if fill_width > 0:
@@ -184,7 +182,7 @@ class Tower(CombatLogic):
                 target=target,
                 damage_callback=self._deal_damage,
                 speed=800,
-                range=self.range
+                projectile=self._projectile_asset
             )
             self.game.projectiles.append(projectile)
 
@@ -206,21 +204,21 @@ class Tower(CombatLogic):
     """
     #Sell tower for some scrap back
     def sell_tower(self):
-        SETTINGS['Gold'] += self.cost * (UPGRADES['Sellback Mod'] * 0.01)
+        from gameconfig import SETTINGS
+        SETTINGS['Scrap'] += self.cost * (UPGRADES['Sellback Mod'] * 0.01)
         self._sold = True
 
     #Upgrades the tower's stats
     def upgrade_tower(self):
-        health_num = max(self.max_health * self._health_multiplier, 1) #Sets up health modifier
-        new_cost_amount = self.upgrade_cost * UPGRADE_MODIFIER
-        self.cost += new_cost_amount #Updates the cost based off upgrade cost, to calculate total cost
-        self.sell_amount += new_cost_amount * SETTINGS["Sell Multiplier"]
-        self.health += health_num #Only heals the amount gained rather than heal to full
-        self.max_health += health_num
-        self.armor *= self._armor_multiplier
-        self.damage *= self._damage_multiplier
-        self.attack_speed = max(self.attack_speed * self._attack_speed_multiplier, MIN_ATTACK_SPEED) #Caps attack speed
-        self.upgrade_cost *= self._upgrade_cost_multiplier
+        from gameconfig import SETTINGS
+        health_num = round(max(self.max_health * self._health_multiplier, 1), 2) #Sets up health modifier
+        new_cost_amount = round(self.upgrade_cost * UPGRADE_MODIFIER, 2)
+        self.cost = round(self.cost + new_cost_amount, 2)
+        self.sell_amount = round(self.sell_amount + (new_cost_amount * SETTINGS['Sell Multiplier']), 2)
+        self.health += health_num
+        self.max_health = round(self.max_health + health_num)
+        self.damage = round(self.damage * self._damage_multiplier, 2)
+        self.upgrade_cost = round(self.upgrade_cost * self._upgrade_cost_multiplier, 2)
         self.level += 1
 
 """

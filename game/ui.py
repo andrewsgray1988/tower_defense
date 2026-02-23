@@ -3,10 +3,12 @@ This file is for handling user interface interaction logic
 """
 
 import pygame
+import gameconfig
 
 from gameconfig import (
     TOWER_CHOICES,
     TOWERS,
+    STRUCTURES,
     SETTINGS
 )
 from constants import (
@@ -14,7 +16,8 @@ from constants import (
     BUILD_MENU_BUTTON_HEIGHT
 )
 from game.game import TileState
-from functions.general import close_program
+from functions.general import close_program, reset_jsons
+from models.structures import Structure
 
 class UIManager:
     def __init__(self, game):
@@ -46,6 +49,11 @@ class UIManager:
         #Quit button handler
         if self.quit_button_rect and self.quit_button_rect.collidepoint(mouse_pos):
             close_program()
+            return
+        #Restart button handler
+        if self.restart_button_rect and self.restart_button_rect.collidepoint(mouse_pos):
+            reset_jsons()
+            gameconfig.GAME_STATE = "menu"
             return
         #Tile check
         col, row = self.game.screen_to_tile(mouse_pos)
@@ -81,6 +89,8 @@ class UIManager:
     def handle_right_click(self):
         if self._build_menu_open:
             self.close_build_menu()
+        if self._tower_menu_open:
+            self.close_tower_menu()
 
     """
     Build Menu Logic
@@ -130,24 +140,30 @@ class UIManager:
     def handle_tower_menu_click(self, mouse_pos):
         for action, rect in self.button_rects.items():
             if rect.collidepoint(mouse_pos):
-
-                tower = self._selected_tower
-                if not tower:
+                unit = self._selected_tower
+                if not unit:
                     return
 
-                if action == "upgrade":
-                    if SETTINGS["Scrap"] >= tower.upgrade_cost:
-                        SETTINGS["Scrap"] -= tower.upgrade_cost
-                        tower.upgrade_tower()
-
-                elif action == "sell":
-                    SETTINGS["Scrap"] += tower.sell_amount
-                    self.game.set_tile_state(tower.col, tower.row, TileState.BUILDABLE)
-                    tower._sold = True
-
+                if isinstance(unit, Structure):
+                    if action == "upgrade":
+                        if SETTINGS["Scrap"] >= unit.upgrade_cost:
+                            SETTINGS["Scrap"] -= unit.upgrade_cost
+                            unit.upgrade_structure()
+                    elif action == "sell":
+                        SETTINGS["Scrap"] += unit.sell_amount
+                        self.game.set_tile_state(unit.col, unit.row, TileState.BUILDABLE)
+                        unit._sold = True
+                else:
+                    if action == "upgrade":
+                        if SETTINGS["Scrap"] >= unit.upgrade_cost:
+                            SETTINGS["Scrap"] -= unit.upgrade_cost
+                            unit.upgrade_tower()
+                    elif action == "sell":
+                        SETTINGS["Scrap"] += unit.sell_amount
+                        self.game.set_tile_state(unit.col, unit.row, TileState.BUILDABLE)
+                        unit._sold = True
                 self.close_tower_menu()
                 return
-
         self.close_tower_menu()
 
     """
@@ -162,6 +178,7 @@ class UIManager:
             self.draw_tower_menu(screen)
 
         self.draw_quit_button(screen)
+        self.draw_restart_button(screen)
 
     #Function that draws the build menu on screen
     def draw_build_menu(self, screen):
@@ -183,7 +200,12 @@ class UIManager:
             )
             self.button_rects[tower_key] = rect
 
-            tower_cost = TOWERS[tower_key]["default_cost"]
+            if tower_key in TOWERS:
+                tower_cost = TOWERS[tower_key]["default_cost"]
+            elif tower_key in STRUCTURES:
+                tower_cost = STRUCTURES[tower_key]["default_cost"]
+            else:
+                continue  # invalid key
             can_afford = SETTINGS["Scrap"] >= tower_cost
 
             bg_color = (80, 80, 80) if can_afford else (40, 40, 40)
@@ -261,5 +283,22 @@ class UIManager:
         pygame.draw.rect(screen, (255, 255, 255), rect, 2)
 
         text = self.font.render("Quit", True, (255, 255, 255))
+        text_rect = text.get_rect(center=rect.center)
+        screen.blit(text, text_rect)
+
+    def draw_restart_button(self, screen):
+        button_width = 120
+        button_height = 40
+
+        x = screen.get_width() - button_width - 160
+        y = screen.get_height() - button_height - 20
+
+        rect = pygame.Rect(x, y, button_width, button_height)
+        self.restart_button_rect = rect
+
+        pygame.draw.rect(screen, (120, 30, 30), rect)
+        pygame.draw.rect(screen, (255, 255, 255), rect, 2)
+
+        text = self.font.render("Restart", True, (255, 255, 255))
         text_rect = text.get_rect(center=rect.center)
         screen.blit(text, text_rect)

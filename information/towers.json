@@ -2,6 +2,7 @@
     "Sword": {
         "max": 1,
         "asset": "towers/Sword.png",
+        "projectile_asset": "Sword",
         "reuse_list": [],
         "default_health": 10.0,
         "default_armor": 1.0,
@@ -13,14 +14,13 @@
         "default_attack_speed": 1.0,
         "default_respawn_timer": 5.0,
         "default_health_multiplier": 0.5,
-        "default_armor_multiplier": 1.5,
         "default_damage_multiplier": 1.5,
-        "default_attack_speed_multiplier": 0.9,
         "default_upgrade_cost_multiplier": 1.5
     },
     "Archer": {
         "max": 1,
         "asset": "towers/Archer.png",
+        "projectile_asset": "Arrow",
         "reuse_list": [],
         "default_health": 10.0,
         "default_armor": 1.0,
@@ -32,9 +32,7 @@
         "default_attack_speed": 1.0,
         "default_respawn_timer": 5.0,
         "default_health_multiplier": 0.5,
-        "default_armor_multiplier": 1.5,
         "default_damage_multiplier": 1.5,
-        "default_attack_speed_multiplier": 0.9,
         "default_upgrade_cost_multiplier": 1.5
     }
 }

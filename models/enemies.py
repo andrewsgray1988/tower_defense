@@ -31,7 +31,10 @@ class Enemy(CombatLogic):
         CombatLogic.__init__(self)
         self.game = game
         self._key = key
-        self._wave_modifier = SETTINGS['Wave'] * WAVE_MODIFIER
+        if SETTINGS['Wave'] == 1:
+            self._wave_modifier = 1
+        else:
+            self._wave_modifier = SETTINGS['Wave'] * WAVE_MODIFIER
         self.set_stats()
         self._initialize_visuals()
         self.x = 0
@@ -54,13 +57,14 @@ class Enemy(CombatLogic):
     def set_stats(self):
         enemy_data = ENEMIES[self._key]
         self.name = enemy_data['name']
+        self._projectile_asset = enemy_data['projectile_asset']
         self.health = enemy_data['default_health'] * self._wave_modifier
         self.max_health = enemy_data['default_health'] * self._wave_modifier
         self.armor = enemy_data['default_armor'] * self._wave_modifier
         self.damage = enemy_data['default_damage'] * self._wave_modifier
         self.scrap = enemy_data['default_scrap'] * self._wave_modifier
         self.essence = enemy_data['default_essence'] * self._wave_modifier
-        self.range = enemy_data['default_range']
+        self.range = enemy_data['default_range'] * 1.2
         self.armor_pierce = enemy_data['default_armor_pierce']
         self.attack_speed = enemy_data['default_attack_speed']
         self.move_speed = enemy_data['default_move_speed']
@@ -168,7 +172,7 @@ class Enemy(CombatLogic):
 
     #Assigns targetables
     def _get_potential_targets(self):
-        return self.game.towers
+        return self.game.towers + self.game.structures
 
     #Selects the target to attack
     def select_targets(self, candidates):
@@ -187,7 +191,7 @@ class Enemy(CombatLogic):
                 target=target,
                 damage_callback=self._deal_damage,
                 speed=800,
-                range=self.range
+                projectile=self._projectile_asset
             )
             self.game.projectiles.append(projectile)
 

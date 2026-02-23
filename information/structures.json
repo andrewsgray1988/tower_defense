@@ -1,12 +1,20 @@
 {
-    "Settlement": {
+    "Healer": {
         "max": 1,
+        "asset": "towers/Staff.png",
+        "projectile_asset": "Potion",
+        "targets": "Friendly",
         "reuse_list": [],
         "default_health": 10.0,
         "default_armor": 1.0,
+        "default_power": 0.1,
+        "default_range": 3,
         "default_cost": 10.0,
         "default_upgrade_cost": 10.0,
+        "default_attack_speed": 1.0,
+        "default_respawn_timer": 5.0,
         "default_health_multiplier": 0.5,
+        "default_power_multiplier": 1.5,
         "default_upgrade_cost_multiplier": 1.5
     }
 }

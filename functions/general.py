@@ -44,6 +44,7 @@ def reset_jsons():
     from gameconfig import (
         SETTINGS,
         TOWERS,
+        STRUCTURES,
         save_all_jsons
     )
     SETTINGS['Wave'] = 1
@@ -51,8 +52,27 @@ def reset_jsons():
     SETTINGS['Essence'] = 0.0
     SETTINGS['Current Gold'] = SETTINGS['Max Gold']
     SETTINGS['Stolen Gold'] = 0
-    SETTINGS["Wait Time"] = 20
-    SETTINGS["Wave Count"] = 10
+    SETTINGS['Wait Time'] = 20
+    SETTINGS['Wave Count'] = 10
     for tower_key, tower_data in TOWERS.items():
         tower_data["max"] = 1
+    for structure_key, structure_data in STRUCTURES.items():
+        structure_data["max"] = 1
     save_all_jsons()
+
+def setup_class_map(choice_list):
+    from models.towers import Sword, Archer
+    from models.structures import Healer
+    from gameconfig import TOWER_CHOICES
+    class_map = {}
+    for choice in choice_list:
+        match choice:
+            case "Sword":
+                class_map["Sword"] = Sword
+            case "Archer":
+                class_map["Archer"] = Archer
+            case "Healer":
+                class_map["Healer"] = Healer
+            case _:
+                return
+    return class_map
