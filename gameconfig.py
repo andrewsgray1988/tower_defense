@@ -11,16 +11,16 @@ from functions.general import (
 #Initializes json loads to lessen json loading throughout the game
 TOWERS = load_json("towers.json")
 SETTINGS = load_json("game_settings.json")
-SYSTEM = load_json("system_settings.json")
 ENEMIES = load_json("enemies.json")
 UPGRADES = load_json("upgrades.json")
 STRUCTURES = load_json("structures.json")
 MAPS = load_json("maps.json")
+ALL_BUILDABLES = {**TOWERS, **STRUCTURES}
 
 #Mutable Game Settings
 GAME_STATE = "menu"
 RUNNING = False
-TOWER_CHOICES = ["Sword", "Archer"]
+TOWER_CHOICES = ["Sword", "Archer", "Healer"]
 WAVE_MODIFIER = SETTINGS["Wave Modifier"]
 ENEMY_LIST = ["Fighter"]
 

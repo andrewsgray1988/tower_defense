@@ -2,6 +2,7 @@
     "Fighter": {
         "name": "Fighter",
         "asset": "enemies/test_enemy.png",
+        "projectile_asset": "Sword",
         "default_health": 10.0,
         "default_armor": 1.0,
         "default_damage": 1.0,

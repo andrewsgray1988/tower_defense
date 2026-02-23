@@ -8,22 +8,26 @@ import random
 
 from enum import Enum
 from models.enemies import Fighter
-from models.towers import Sword, Archer
 from functions.mapgeneration import (
     pixel_to_grid,
     grid_to_pixel
 )
 from gameconfig import (
     SETTINGS,
-    TOWERS,
-    ENEMY_LIST
+    ALL_BUILDABLES,
+    ENEMY_LIST,
+    TOWER_CHOICES
 )
 from functions.general import (
-    reset_jsons
+    reset_jsons,
+    setup_class_map
 )
 
 #Asset Storage, to reduce multiple loads for the same asset
 _COIN_ASSET = None
+
+#Set up Class Map
+CLASS_MAP = setup_class_map(TOWER_CHOICES)
 
 #Sets up Enum states for the Tiles
 class TileState(Enum):
@@ -37,6 +41,7 @@ class Game:
         self.map_data = map_data
         self.enemies = []
         self.towers = []
+        self.structures = []
         self.projectiles = []
         self.gold_drops = {}
         self.stored_gold = SETTINGS['Max Gold']
@@ -126,6 +131,21 @@ class Game:
         self.towers = [t for t in self.towers if not t._sold]
 
         """
+        Structure Logic
+        """
+        #Structure Respawn Timer
+        for structure in self.structures:
+            if structure._alive:
+                structure.update_combat(dt)
+            else:
+                if structure._current_timer <= 0:
+                    structure.revive_structure()
+                else:
+                    structure._current_timer -= dt
+
+        self.structures = [s for s in self.structures if not s._sold]
+
+        """
         Projectile Logic
         """
         #Update and clean up projectiles
@@ -140,7 +160,7 @@ class Game:
         #Wave and Spawn handler
         if self._wait_time <= 0 and self.wave_count > 0:
             spawned_enemy = random.choice(ENEMY_LIST)
-            new_time = random.randint(3, 10)
+            new_time = random.randint(3, 8)
             self._wait_time = new_time
             SETTINGS["Wait Time"] = new_time
             self.spawn_enemy(spawned_enemy)
@@ -148,7 +168,7 @@ class Game:
             SETTINGS["Wave Count"] = self.wave_count
         elif self._wait_time <= 0 and self.wave_count <= 0:
             SETTINGS["Wave"] += 1
-            self._wait_time = 10
+            self._wait_time = 1
             self.wave_count = 10
             SETTINGS["Wave Count"] = self.wave_count
         elif self._wait_time > 0:
@@ -180,6 +200,8 @@ class Game:
             tower.draw(screen)
         for enemy in self.enemies:
             enemy.draw(screen)
+        for structure in self.structures:
+            structure.draw(screen)
         for projectile in self.projectiles:
             projectile.draw(screen)
 
@@ -249,7 +271,7 @@ class Game:
         return True
 
     """
-    Tower Logic
+    Tower and Structure Logic
     """
     #Make sure that the tiles are buildable and in bounds
     def is_tile_in_bounds(self, col, row):
@@ -265,34 +287,45 @@ class Game:
         return self.get_tile_state(col, row) == TileState.BUILDABLE
 
     #Tower placement logic
-    def place_tower(self, tower_key, col, row):
+    def place_tower(self, build_key, col, row):
+        from gameconfig import TOWERS
         if not self.is_tile_buildable(col, row):
             return False
-        if tower_key not in TOWERS:
+
+        if build_key not in ALL_BUILDABLES:
             return False
 
-        cost = TOWERS[tower_key]["default_cost"]
+        if build_key not in CLASS_MAP:
+            return False
+
+        build_data = ALL_BUILDABLES[build_key]
+        cost = build_data["default_cost"]
 
         if SETTINGS["Scrap"] < cost:
             return False
 
-        match tower_key:
-            case "Sword":
-                tower = Sword(self, col, row)
-            case "Archer":
-                tower = Archer(self, col, row)
-            case _:
-                return False
-
         SETTINGS["Scrap"] -= cost
-        self.towers.append(tower)
+
+        build_class = CLASS_MAP[build_key]
+        obj = build_class(self, col, row)
+
+        if build_key in TOWERS:
+            self.towers.append(obj)
+        else:
+            self.structures.append(obj)
+
         self.set_tile_state(col, row, TileState.TOWER)
         return True
 
     #Checks tower placed at selected tile
     def get_tower_at(self, col, row):
-        tower_dict = {(t.col, t.row): t for t in self.towers}
-        return tower_dict.get((col, row))
+        for t in self.towers:
+            if t.col == col and t.row == row:
+                return t
+        for s in self.structures:
+            if s.col == col and s.row == row:
+                return s
+        return None
 
     """
     Debug Features

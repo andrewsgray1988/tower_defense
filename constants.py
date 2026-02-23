@@ -2,11 +2,13 @@
 This page is for storing constants throughout other functions, for easy use - typically settings that don't change much
 through gameplay
 """
-import gameconfig
+from functions.general import load_json
+
+SYSTEM = load_json("system_settings.json")
 
 #Constant System Settings
-SCREEN_WIDTH = gameconfig.SYSTEM["Screen Width"]
-SCREEN_HEIGHT = gameconfig.SYSTEM["Screen Height"]
+SCREEN_WIDTH = SYSTEM["Screen Width"]
+SCREEN_HEIGHT = SYSTEM["Screen Height"]
 TILE_SIZE = 16
 BUILD_MENU_BUTTON_WIDTH = 140
 BUILD_MENU_BUTTON_HEIGHT = 40

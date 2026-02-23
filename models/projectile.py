@@ -11,7 +11,7 @@ _PROJECTILE_ASSET_CACHE = {}
 
 #Initiates the projectile
 class Projectile:
-    def __init__(self, game, start_x, start_y, target, damage_callback, speed, range):
+    def __init__(self, game, start_x, start_y, target, damage_callback, speed, projectile):
         self.game = game
         self.x = start_x
         self.y = start_y
@@ -20,10 +20,15 @@ class Projectile:
         self.speed = speed
         self._alive = True
 
-        if range <= 1:
-            asset_path = "towers/Sword.png"
-        else:
-            asset_path = "towers/Arrow.png"
+        match projectile:
+            case "Sword":
+                asset_path = "towers/Sword.png"
+            case "Arrow":
+                asset_path = "towers/Arrow.png"
+            case "Potion":
+                asset_path = "towers/Potion.png"
+            case _:
+                print("Asset not found")
 
         if asset_path not in _PROJECTILE_ASSET_CACHE:
             full_path = os.path.join("assets", asset_path)
