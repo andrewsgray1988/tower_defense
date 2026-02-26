@@ -15,6 +15,7 @@ from gameconfig import (
 from functions.combat import CombatLogic
 from models.projectile import Projectile
 
+
 #Asset Storage, to reduce multiple loads for the same asset
 _ENEMY_ASSET_CACHE = {}
 
