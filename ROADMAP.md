@@ -2,6 +2,7 @@
 Below will document all the steps to complete, along with time started and time completed, until the game is ready for 
 Kickstarter release
 
+# 0.2 Build
 
 ## Implement Towers
 
@@ -39,6 +40,8 @@ Kickstarter release
   - Magnet
   - Defender
 
+# 0.3 Build
+
 ## Implement Enemies
 
 - **Implementing the rest of the Enemy types**:
@@ -64,6 +67,8 @@ Kickstarter release
 - **Implementing logic that will spawn a Boss - a suped up version of an Enemy**:
 - - **Not Started Yet**:
   - Boss Logic
+
+# 0.4 Build
 
 ## Implement Maps
 
@@ -111,6 +116,8 @@ Kickstarter release
   - Essence Shop Button (Placeholder)
   - Options Menu Button (Placeholder)
 
+# 0.5 Build
+
 ## Implement Options Menu
 
 - **Implementing a menu where players can customize game setting options (screen size, etc.)**:
@@ -128,6 +135,8 @@ options menu**:
 - - **Not Started Yet**:
   - Building Hotkeys
   - Menu Hotkeys
+
+# 0.6 Build
 
 ## Implement Tower Selection
 
@@ -183,6 +192,8 @@ options menu**:
   - Regenerative
   - Lightning Storm
   - Speedrun
+
+# 0.7 Build
   
 ## Implement Essence System
 
@@ -205,6 +216,8 @@ options menu**:
 - **Implementing the passive saving of upgrades and current progress to reload last state when opening game**:
 - - **Not Started Yet**:
   - Save JSONs created and referenced
+
+# 0.8 Build
 
 ## Implement Story Mode
 
@@ -330,6 +343,8 @@ last as long as they can**:
   - Sounds for Enemies
   - Menu Sounds
 
+# 0.9 Build
+
 ## Playtesting Build
 
 - **Implementing a build for playtesting with friends**:
@@ -362,6 +377,8 @@ last as long as they can**:
 - **Implementing a build for public release**:
 - - **Not Started Yet**:
   - Demo Build Completed and Published to itch.io
+
+# 1.0 Build
 
 ## Kickstarter
 
