@@ -10,11 +10,11 @@ Kickstarter release
 - - **Work in Progress** - 2/25/2026:
   - Sword - 2/25/2026
   - Archer - 2/25/2026
-  - Poison
-  - Spear
-  - Slower
-  - Cleaver
-  - Grenadier
+  - Poison - 2/26/2026
+  - Spear - 2/26/2026
+  - Sludger - 2/27/2026
+  - Cleaver - 2/27/2026
+  - Grenadier - 2/27/2026
   - Heavy
   - Sniper
   - Dagger
@@ -192,6 +192,7 @@ options menu**:
   - Regenerative
   - Lightning Storm
   - Speedrun
+  - Poison Resistance
 
 # 0.7 Build
   

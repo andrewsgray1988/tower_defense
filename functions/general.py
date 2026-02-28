@@ -8,6 +8,8 @@ import threading
 import pygame
 import sys
 
+from models.towers import Sludger
+
 #Sets up the JSON load path
 BASE_DIR = os.path.dirname(os.path.dirname(__file__))
 JSON_DIR = "information"
@@ -41,29 +43,26 @@ def close_program():
 
 #Resets all settings and JSONS to default
 def reset_jsons():
+    import gameconfig
     from gameconfig import (
         SETTINGS,
-        TOWERS,
         STRUCTURES,
         save_all_jsons
     )
+    default_towers = load_json("default_towers.json")
     SETTINGS['Wave'] = 1
     SETTINGS['Scrap'] = 200
     SETTINGS['Essence'] = 0.0
     SETTINGS['Current Gold'] = SETTINGS['Max Gold']
     SETTINGS['Stolen Gold'] = 0
-    SETTINGS['Wait Time'] = 20
+    SETTINGS['Wait Time'] = 10
     SETTINGS['Wave Count'] = 10
-    for tower_key, tower_data in TOWERS.items():
-        tower_data["max"] = 1
-    for structure_key, structure_data in STRUCTURES.items():
-        structure_data["max"] = 1
+    gameconfig.TOWERS = default_towers
     save_all_jsons()
 
 def setup_class_map(choice_list):
-    from models.towers import Sword, Archer
+    from models.towers import Sword, Archer, Poison, Spear, Sludger, Cleaver, Grenadier
     from models.structures import Healer
-    from gameconfig import TOWER_CHOICES
     class_map = {}
     for choice in choice_list:
         match choice:
@@ -73,6 +72,16 @@ def setup_class_map(choice_list):
                 class_map["Archer"] = Archer
             case "Healer":
                 class_map["Healer"] = Healer
+            case "Poison":
+                class_map["Poison"] = Poison
+            case "Spear":
+                class_map["Spear"] = Spear
+            case "Sludger":
+                class_map["Sludger"] = Sludger
+            case "Cleaver":
+                class_map["Cleaver"] = Cleaver
+            case "Grenadier":
+                class_map["Grenadier"] = Grenadier
             case _:
                 return
     return class_map

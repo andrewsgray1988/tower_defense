@@ -50,6 +50,8 @@ class Enemy(CombatLogic):
         self.carrying_gold = False
         self._gold_dropped = False
         self._escaped = False
+        self._is_poisoned = False
+        self._poison_damage = 0
 
     """
     Game / Initiate Section
@@ -185,15 +187,7 @@ class Enemy(CombatLogic):
     #Attack function
     def attack(self, targets):
         for target in targets:
-            projectile = Projectile(
-                game=self.game,
-                start_x=self.x,
-                start_y=self.y,
-                target=target,
-                damage_callback=self._deal_damage,
-                speed=800,
-                projectile=self._projectile_asset
-            )
+            projectile = Projectile(self.game, self.x, self.y, target, self._deal_damage, 800, self._projectile_asset)
             self.game.projectiles.append(projectile)
 
     """

@@ -88,6 +88,8 @@ class Game:
         for enemy in self.enemies:
             enemy.move_along_path(self.map_data, dt)
             enemy.update_combat(dt)
+            if enemy._is_poisoned:
+                enemy.take_damage(enemy._poison_damage)
 
             #Enemy arrives at end of path
             if enemy._alive and not enemy.carrying_gold:
@@ -160,7 +162,7 @@ class Game:
         #Wave and Spawn handler
         if self._wait_time <= 0 and self.wave_count > 0:
             spawned_enemy = random.choice(ENEMY_LIST)
-            new_time = random.randint(3, 8)
+            new_time = random.randint(2, 5)
             self._wait_time = new_time
             SETTINGS["Wait Time"] = new_time
             self.spawn_enemy(spawned_enemy)

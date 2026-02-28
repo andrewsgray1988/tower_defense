@@ -4,7 +4,7 @@ This file handles the game play logic on the offensive towers
 
 import os
 import pygame
-import gameconfig
+import math
 
 from collections import deque
 from functions.combat import CombatLogic
@@ -175,15 +175,7 @@ class Tower(CombatLogic):
     #Attack trigger
     def attack(self, targets):
         for target in targets:
-            projectile = Projectile(
-                game=self.game,
-                start_x=self.x,
-                start_y=self.y,
-                target=target,
-                damage_callback=self._deal_damage,
-                speed=800,
-                projectile=self._projectile_asset
-            )
+            projectile = Projectile(self.game, self.x, self.y, target, self._deal_damage, 800, self._projectile_asset)
             self.game.projectiles.append(projectile)
 
     #Deal damage trigger
@@ -204,7 +196,7 @@ class Tower(CombatLogic):
     """
     #Sell tower for some scrap back
     def sell_tower(self):
-        from gameconfig import SETTINGS
+        from gameconfig import SETTINGS, UPGRADES
         SETTINGS['Scrap'] += self.cost * (UPGRADES['Sellback Mod'] * 0.01)
         self._sold = True
 
@@ -231,3 +223,74 @@ class Sword(Tower):
 class Archer(Tower):
     def __init__(self, game, col, row):
         super().__init__(game,"Archer", col, row)
+
+class Poison(Tower):
+    def __init__(self, game, col, row):
+        super().__init__(game, "Poison", col, row)
+
+    #Poison Damage Override
+    def _deal_damage(self, target):
+        if not target._is_poisoned:
+            target._is_poisoned = True
+        target._poison_damage += self.damage
+
+class Spear(Tower):
+    def __init__(self, game, col, row):
+        super().__init__(game, "Spear", col, row)
+
+class Sludger(Tower):
+    def __init__(self, game, col, row):
+        super().__init__(game, "Sludger", col, row)
+
+    #Splash Override
+    def _deal_damage(self, target):
+        splash_radius = self.game.tile_size
+
+        for enemy in self.game.enemies:
+            dx = enemy.x - target.x
+            dy = enemy.y - target.y
+            distance = math.hypot(dx, dy)
+
+            if distance <= splash_radius:
+                if not enemy._is_poisoned:
+                    enemy._is_poisoned = True
+                enemy._poison_damage += self.damage
+
+    #Attack override for splash
+    def attack(self, targets):
+        for target in targets:
+            projectile = Projectile(self.game, self.x, self.y, target, self._deal_damage, 800, self._projectile_asset, 1)
+            self.game.projectiles.append(projectile)
+
+class Cleaver(Tower):
+    def __init__(self, game, col, row):
+        super().__init__(game, "Cleaver", col, row)
+
+    # Hits everything in range
+    def select_targets(self, candidates):
+        if not candidates:
+            return []
+        return candidates
+
+class Grenadier(Tower):
+    def __init__(self, game, col, row):
+        super().__init__(game, "Grenadier", col, row)
+
+    def _deal_damage(self, target):
+        splash_radius = self.game.tile_size
+
+        for enemy in self.game.enemies:
+            dx = enemy.x - target.x
+            dy = enemy.y - target.y
+            distance = math.hypot(dx, dy)
+
+            if distance <= splash_radius:
+                effective_armor = max(enemy.armor - self.armor_pierce, 0)
+                reduction = min(effective_armor, 100) / 100
+                damage = self.damage * (1 - reduction)
+                enemy.take_damage(damage)
+
+    def attack(self, targets):
+        for target in targets:
+            projectile = Projectile(self.game, self.x, self.y, target, self._deal_damage, 800, self._projectile_asset, 1)
+            self.game.projectiles.append(projectile)

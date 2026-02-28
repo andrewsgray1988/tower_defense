@@ -15,12 +15,13 @@ ENEMIES = load_json("enemies.json")
 UPGRADES = load_json("upgrades.json")
 STRUCTURES = load_json("structures.json")
 MAPS = load_json("maps.json")
+SYSTEM = load_json("system_settings.json")
 ALL_BUILDABLES = {**TOWERS, **STRUCTURES}
 
 #Mutable Game Settings
 GAME_STATE = "menu"
 RUNNING = False
-TOWER_CHOICES = ["Sword", "Archer", "Healer"]
+TOWER_CHOICES = ["Grenadier"]
 WAVE_MODIFIER = SETTINGS["Wave Modifier"]
 ENEMY_LIST = ["Fighter"]
 
