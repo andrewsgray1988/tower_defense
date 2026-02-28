@@ -2,7 +2,15 @@
 This page is for storing constants throughout other functions, for easy use - typically settings that don't change much
 through gameplay
 """
-from functions.general import load_json
+import os
+import json
+
+BASE_DIR = os.path.dirname(__file__)
+JSON_DIR = "information"
+
+def load_json(file):
+    with open(os.path.join(BASE_DIR, JSON_DIR, file)) as json_file:
+        return json.load(json_file)
 
 SYSTEM = load_json("system_settings.json")
 
@@ -18,4 +26,4 @@ MIN_ATTACK_SPEED = 0.1
 UPGRADE_MODIFIER = 1.1
 
 #Initializes if Debug should be active or not
-DEBUG_MODE = False
+DEBUG_MODE = True

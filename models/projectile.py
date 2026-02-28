@@ -11,7 +11,7 @@ _PROJECTILE_ASSET_CACHE = {}
 
 #Initiates the projectile
 class Projectile:
-    def __init__(self, game, start_x, start_y, target, damage_callback, speed, projectile):
+    def __init__(self, game, start_x, start_y, target, damage_callback, speed, projectile_type, split_radius=None, has_split=False):
         self.game = game
         self.x = start_x
         self.y = start_y
@@ -19,8 +19,10 @@ class Projectile:
         self.damage_callback = damage_callback
         self.speed = speed
         self._alive = True
+        self._split_radius = split_radius
+        self._has_split = has_split
 
-        match projectile:
+        match projectile_type:
             case "Sword":
                 asset_path = "towers/Sword.png"
             case "Arrow":
@@ -37,6 +39,7 @@ class Projectile:
             _PROJECTILE_ASSET_CACHE[asset_path] = scaled_image
 
         self._asset = _PROJECTILE_ASSET_CACHE[asset_path]
+        self._projectile_type = projectile_type
 
     #Update logic as projectile exists
     def update(self, dt):
@@ -49,8 +52,7 @@ class Projectile:
         distance = math.hypot(dx, dy)
 
         if distance < 5:
-            self.damage_callback(self.target)
-            self._alive = False
+            self._on_hit()
             return
 
         move_distance = self.speed * dt
@@ -66,3 +68,31 @@ class Projectile:
     def draw(self, screen):
         rect = self._asset.get_rect(center=(self.x, self.y))
         screen.blit(self._asset, rect)
+
+    #Hit, and check for splash attack
+    def _on_hit(self):
+        if not self.target or not self.target._alive:
+            self._alive = False
+            return
+
+        self.damage_callback(self.target)
+
+        if self._split_radius and not self._has_split:
+            self._split_projectiles()
+
+        self._alive = False
+
+    #Handle splash attacks for
+    def _split_projectiles(self):
+        splash_pixels = self._split_radius * self.game.tile_size
+        for enemy in self.game.enemies:
+            if enemy is self.target:
+                continue
+            if not enemy._alive:
+                continue
+            dx = enemy.x - self.target.x
+            dy = enemy.y - self.target.y
+            distance = math.hypot(dx, dy)
+            if distance <= splash_pixels:
+                new_proj = Projectile(self.game, self.target.x, self.target.y, enemy, self.damage_callback, self.speed, self._projectile_type, None, True)
+                self.game.projectiles.append(new_proj)
