@@ -18,14 +18,15 @@ Kickstarter release
   - Heavy - 2/28/2026
   - Sniper - 3/1/2026
   - Dagger - 3/1/2026
-  - Crossbow
-  - Quickdraw
-  - Piercer
-  - Precision
-  - Mage
+  - Crossbow - 3/1/2026
+  - Quickdraw - 3/2/2026
+  - Piercer - 3/2/2026
+  - Precision - 3/2/2026
+  - Mage - 3/2/2026
   - Flamethrower
   - Expensive
   - Desperation
+  - Initial Balancing
 
 ## Implement Structures
 
@@ -39,6 +40,7 @@ Kickstarter release
   - Quicker
   - Magnet
   - Defender
+  - Initial Balancing
 
 # 0.3 Build
 
@@ -61,6 +63,7 @@ Kickstarter release
   - Wizard
   - Druid
   - Bard
+  - Initial Balancing
 
 ## Implement Bosses
 

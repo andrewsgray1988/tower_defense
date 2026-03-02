@@ -30,6 +30,10 @@ class UIManager:
         self._selected_tower = None
         self._tower_menu_open = False
         self.quit_button_rect = None
+        self._mage_primed = False
+        self._stored_mage_tower = None
+        self._direction_select_open = False
+        self._pending_tower_key = None
 
     """
     Input Logic
@@ -46,6 +50,7 @@ class UIManager:
 
     #Functions for the left click
     def handle_left_click(self, mouse_pos):
+        from models.towers import Mage
         #Quit button handler
         if self.quit_button_rect and self.quit_button_rect.collidepoint(mouse_pos):
             close_program()
@@ -55,19 +60,35 @@ class UIManager:
             reset_jsons()
             gameconfig.GAME_STATE = "menu"
             return
-        #Tile check
-        col, row = self.game.screen_to_tile(mouse_pos)
-        if col is None or row is None:
-            return
-
         #If build menu already open, handle menu clicks
         if self._build_menu_open:
             self.handle_build_menu_click(mouse_pos)
             return
-
         #If Tower menu already open, handle menu clicks
         if self._tower_menu_open:
-            self.handle_tower_menu_click(mouse_pos)
+            clicked_button = False
+            for rect in self.button_rects.values():
+                if rect.collidepoint(mouse_pos):
+                    clicked_button = True
+                    break
+            if clicked_button:
+                self.handle_tower_menu_click(mouse_pos)
+                return
+        if self._direction_select_open:
+            self.handle_direction_select(mouse_pos)
+        #Tile check
+        col, row = self.game.screen_to_tile(mouse_pos)
+        if col is None or row is None:
+            return
+        #Handle Mage Tower Click Target
+        if self._mage_primed:
+            coord = (col, row)
+            print("KABOOM!")
+            self._stored_mage_tower._deal_damage(coord)
+            self._stored_mage_tower._attack_timer = 0
+            self._mage_primed = False
+            self._stored_mage_tower = None
+            self.close_tower_menu()
             return
 
         tile_state = self.game.get_tile_state(col, row)
@@ -82,7 +103,12 @@ class UIManager:
         #If the tile state is a tower, open the tower menu
         elif tile_state == TileState.TOWER:
             tower = self.game.get_tower_at(col, row)
-            if tower:
+            if tower and isinstance(tower, Mage):
+                if tower._attack_timer == tower.attack_speed:
+                    self.open_tower_menu(col, row, tower)
+                    self._mage_primed = True
+                    self._stored_mage_tower = tower
+            elif tower:
                self.open_tower_menu(col, row, tower)
 
     #Functions for the right click
@@ -91,6 +117,9 @@ class UIManager:
             self.close_build_menu()
         if self._tower_menu_open:
             self.close_tower_menu()
+        if self._mage_primed:
+            self._mage_primed = False
+            self._stored_mage_tower = None
 
     """
     Build Menu Logic
@@ -111,14 +140,37 @@ class UIManager:
         for tower_key, rect in self.button_rects.items():
             if rect.collidepoint(mouse_pos):
                 col, row = self._menu_tile
-                success = self.game.place_tower(tower_key, col, row)
+                if tower_key == "Flamethrower":
+                    self._pending_tower_key = tower_key
+                    self._direction_select_open = True
+                    pending_tile = self._menu_tile
+                    self.close_build_menu()
+                    self._menu_tile = pending_tile
+                    return
 
+                success = self.game.place_tower(tower_key, col, row)
                 if success:
                     self.close_build_menu()
                 return
 
         # Clicked outside buttons → close menu
         self.close_build_menu()
+
+    def handle_direction_select(self, mouse_pos):
+        for direction, rect in self.button_rects.items():
+            if rect.collidepoint(mouse_pos):
+                col, row = self._menu_tile
+
+                success = self.game.place_tower(self._pending_tower_key, col, row, direction)
+                if success:
+                    self._direction_select_open = False
+                    self._pending_tower_key = None
+                    self._menu_tile = None
+                    self.button_rects = {}
+                return
+        self._direction_select_open = False
+        self._pending_tower_key = None
+        self.button_rects = {}
 
     """
     Tower Menu Logic
@@ -162,8 +214,14 @@ class UIManager:
                         SETTINGS["Scrap"] += unit.sell_amount
                         self.game.set_tile_state(unit.col, unit.row, TileState.BUILDABLE)
                         unit._sold = True
+                if self._mage_primed:
+                    self._mage_primed = False
+                    self._stored_mage_tower = None
                 self.close_tower_menu()
                 return
+        if self._mage_primed:
+            self._mage_primed = False
+            self._stored_mage_tower = None
         self.close_tower_menu()
 
     """
@@ -176,6 +234,9 @@ class UIManager:
 
         elif self._tower_menu_open:
             self.draw_tower_menu(screen)
+
+        if self._direction_select_open:
+            self.draw_direction_select(screen)
 
         self.draw_quit_button(screen)
         self.draw_restart_button(screen)
@@ -249,7 +310,7 @@ class UIManager:
 
             self.button_rects[action] = rect
 
-            # Afford check only applies to upgrade
+            #Afford check only applies to upgrade
             if action == "upgrade":
                 can_afford = SETTINGS["Scrap"] >= tower.upgrade_cost
             else:
@@ -302,3 +363,31 @@ class UIManager:
         text = self.font.render("Restart", True, (255, 255, 255))
         text_rect = text.get_rect(center=rect.center)
         screen.blit(text, text_rect)
+
+    def draw_direction_select(self, screen):
+        col, row = self._menu_tile
+        menu_x, menu_y = self.game.tile_to_screen(col, row)
+
+        button_width = BUILD_MENU_BUTTON_WIDTH
+        button_height = BUILD_MENU_BUTTON_HEIGHT
+        padding = 5
+
+        self.button_rects = {}
+
+        directions = ["North", "South", "East", "West"]
+
+        for i, direction in enumerate(directions):
+            rect = pygame.Rect(
+                menu_x,
+                menu_y + i * (button_height + padding),
+                button_width,
+                button_height
+            )
+
+            self.button_rects[direction] = rect
+
+            pygame.draw.rect(screen, (80, 80, 80), rect)
+            pygame.draw.rect(screen, (200, 200, 200), rect, 2)
+
+            text = self.font.render(direction, True, (255, 255, 255))
+            screen.blit(text, (rect.x + 8, rect.y + 8))
