@@ -294,3 +294,19 @@ class Grenadier(Tower):
         for target in targets:
             projectile = Projectile(self.game, self.x, self.y, target, self._deal_damage, 800, self._projectile_asset, 1)
             self.game.projectiles.append(projectile)
+
+class Heavy(Tower):
+    def __init__(self, game, col, row):
+        super().__init__(game, "Heavy", col, row)
+
+class Sniper(Tower):
+    def __init__(self, game, col, row):
+        super().__init__(game, "Sniper", col, row)
+
+class Dagger(Tower):
+    def __init__(self, game, col, row):
+        super().__init__(game, "Dagger", col, row)
+
+class Crossbow(Tower):
+    def __init__(self, game, col, row):
+        super().__init__(game, "Crossbow", col, row)

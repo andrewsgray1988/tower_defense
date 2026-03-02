@@ -21,7 +21,7 @@ ALL_BUILDABLES = {**TOWERS, **STRUCTURES}
 #Mutable Game Settings
 GAME_STATE = "menu"
 RUNNING = False
-TOWER_CHOICES = ["Grenadier"]
+TOWER_CHOICES = ["Dagger", "Crossbow"]
 WAVE_MODIFIER = SETTINGS["Wave Modifier"]
 ENEMY_LIST = ["Fighter"]
 
