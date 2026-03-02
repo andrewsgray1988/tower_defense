@@ -1,4 +1,8 @@
 {
-  "Screen Width": 1920,
-  "Screen Height": 1080
+  "Screen Width": 1280,
+  "Screen Height": 720,
+  "Desktop Screen Width": 1920,
+  "Desktop Screen Height": 1080,
+  "Laptop Screen Width": 1280,
+  "Laptop Screen Height": 720
 }

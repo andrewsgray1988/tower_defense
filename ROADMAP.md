@@ -7,7 +7,7 @@ Kickstarter release
 ## Implement Towers
 
 - **Implementing the rest of the player controlled Towers - Offensive based**:
-- - **Work in Progress** - 2/25/2026:
+- - **Work in Progress** - 2/25/2026 - W.I.P.
   - Sword - 2/25/2026
   - Archer - 2/25/2026
   - Poison - 2/26/2026
@@ -15,9 +15,9 @@ Kickstarter release
   - Sludger - 2/27/2026
   - Cleaver - 2/27/2026
   - Grenadier - 2/27/2026
-  - Heavy
-  - Sniper
-  - Dagger
+  - Heavy - 2/28/2026
+  - Sniper - 3/1/2026
+  - Dagger - 3/1/2026
   - Crossbow
   - Quickdraw
   - Piercer
