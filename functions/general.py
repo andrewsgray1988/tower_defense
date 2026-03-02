@@ -61,8 +61,27 @@ def reset_jsons():
     save_all_jsons()
 
 def setup_class_map(choice_list):
-    from models.towers import Sword, Archer, Poison, Spear, Sludger, Cleaver, Grenadier, Heavy, Sniper, Dagger, Crossbow
-    from models.structures import Healer
+    from models.towers import (
+        Sword,
+        Archer,
+        Poison,
+        Spear,
+        Sludger,
+        Cleaver,
+        Grenadier,
+        Heavy,
+        Sniper,
+        Dagger,
+        Crossbow,
+        Quickshot,
+        Piercer,
+        Precision,
+        Mage,
+        Flamethrower
+    )
+    from models.structures import (
+        Healer
+    )
     class_map = {}
     for choice in choice_list:
         match choice:
@@ -90,6 +109,16 @@ def setup_class_map(choice_list):
                 class_map["Dagger"] = Dagger
             case "Crossbow":
                 class_map["Crossbow"] = Crossbow
+            case "Quickshot":
+                class_map["Quickshot"] = Quickshot
+            case "Piercer":
+                class_map["Piercer"] = Piercer
+            case "Precision":
+                class_map["Precision"] = Precision
+            case "Mage":
+                class_map["Mage"] = Mage
+            case "Flamethrower":
+                class_map["Flamethrower"] = Flamethrower
             case _:
                 return
     return class_map

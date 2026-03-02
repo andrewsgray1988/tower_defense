@@ -310,3 +310,133 @@ class Dagger(Tower):
 class Crossbow(Tower):
     def __init__(self, game, col, row):
         super().__init__(game, "Crossbow", col, row)
+
+class Quickshot(Tower):
+    def __init__(self, game, col, row):
+        super().__init__(game, "Quickshot", col, row)
+
+class Piercer(Tower):
+    def __init__(self, game, col, row):
+        super().__init__(game, "Piercer", col, row)
+
+class Precision(Tower):
+    def __init__(self, game, col, row):
+        super().__init__(game, "Precision", col, row)
+
+class Mage(Tower):
+    def __init__(self, game, col, row):
+        super().__init__(game, "Mage", col, row)
+        self._attack_timer = self.attack_speed
+
+    #Overrides auto attack, click based attack
+    def attack(self, targets):
+        return
+
+    #Unique click splash damage attack
+    def _deal_damage(self, tile):
+        tile_x, tile_y = tile
+        for enemy in self.game.enemies:
+            effective_armor = max(enemy.armor - self.armor_pierce, 0)
+            reduction = min(effective_armor, 100) / 100
+            damage = self.damage * (1 - reduction)
+            if not enemy._alive:
+                continue
+            enemy_tile_x, enemy_tile_y = self.game.screen_to_tile((enemy.x, enemy.y))
+
+            dx = enemy_tile_x - tile_x
+            dy = enemy_tile_y - tile_y
+            distance = max(abs(dx), abs(dy))
+
+            if distance == 0:
+                enemy.take_damage(damage)
+            elif distance == 1:
+                enemy.take_damage((damage * 0.50))
+
+    #Override Combat check and update recharge timer
+    def update_combat(self, dt):
+        # Reduces attack timer if they've already attacked
+        if self._attack_timer < self.attack_speed and self._alive:
+            self._attack_timer += dt
+        elif self._attack_timer >= self.attack_speed:
+            self._attack_timer = self.attack_speed
+
+    #Override the draw and adds recharge meter
+    def draw(self, screen):
+        rect = self._asset.get_rect(center=(self.x, self.y))
+        screen.blit(self._asset, rect)
+
+        BAR_HEIGHT = 6
+        BAR_PADDING = 2
+
+        bar_width = rect.width
+        bar_x = rect.left
+        bar_y = rect.top + BAR_PADDING
+
+        #Health Bar
+        health_bg_rect = pygame.Rect(bar_x, bar_y, bar_width, BAR_HEIGHT)
+        pygame.draw.rect(screen, (0, 0, 0), health_bg_rect)
+
+        if self.health > 0 and self._alive:
+            #Health ratio
+            bar_ratio = max(self.health / self.max_health, 0)
+            fill_color = (200, 0, 0)
+
+        elif self.health <= 0 and not self._alive:
+            #Recharge ratio
+            bar_ratio = max(1 - (self._current_timer / self._respawn_timer), 0)
+            fill_color = (0, 200, 255)
+
+        fill_width = int(bar_width * bar_ratio)
+        if fill_width > 0:
+            fill_rect = pygame.Rect(bar_x, bar_y, fill_width, BAR_HEIGHT)
+            pygame.draw.rect(screen, fill_color, fill_rect)
+        pygame.draw.rect(screen, (255, 255, 255), health_bg_rect, 1)
+
+        #Cooldown Bar
+        cd_bar_y = bar_y + BAR_HEIGHT + BAR_PADDING
+        cd_bg_rect = pygame.Rect(bar_x, cd_bar_y, bar_width, BAR_HEIGHT)
+        pygame.draw.rect(screen, (0, 0, 0), cd_bg_rect)
+
+        cd_bar_ratio = max(self._attack_timer / self.attack_speed, 0)
+        cd_fill_width = int(bar_width * cd_bar_ratio)
+        if cd_fill_width > 0:
+            cd_fill_rect = pygame.Rect(bar_x, cd_bar_y, cd_fill_width, BAR_HEIGHT)
+            pygame.draw.rect(screen, (0, 200, 0), cd_fill_rect)
+        pygame.draw.rect(screen, (255, 255, 255), cd_bg_rect, 1)
+
+        #Tower Number
+        num_surface = self._font.render(str(self.num), True, (255, 255, 255))
+        num_rect = num_surface.get_rect()
+        num_rect.bottomleft = (rect.left + 4, rect.bottom - 2)
+        screen.blit(num_surface, num_rect)
+
+        #Tower Level
+        level_surface = self._font.render(str(self.level), True, (255, 255, 0))
+        level_rect = level_surface.get_rect()
+        level_rect.bottomright = (rect.right - 4, rect.bottom - 2)
+        screen.blit(level_surface, level_rect)
+
+class Flamethrower(Tower):
+    def __init__(self, game, col, row, direction):
+        super().__init__(game, "Flamethrower", col, row)
+        self.direction = direction
+
+
+    #Override for line damage
+    def select_targets(self, enemies):
+        tile_size = self.game.tile_size
+        selected = []
+
+        for enemy in enemies:
+            enemy_col = int(enemy.x // tile_size)
+            enemy_row = int(enemy.y // tile_size)
+
+            if self.direction == "North" and enemy_col == self.col and enemy_row < self.row and self.row - enemy_row <= self.range:
+                selected.append(enemy)
+            elif self.direction == "South" and enemy_col == self.col and enemy_row > self.row and enemy_row - self.row <= self.range:
+                selected.append(enemy)
+            elif self.direction == "West" and enemy_row == self.row and enemy_col < self.col and self.col - enemy_col <= self.range:
+                selected.append(enemy)
+            elif self.direction == "East" and enemy_row == self.row and enemy_col > self.col and enemy_col - self.col <= self.range:
+                selected.append(enemy)
+        return selected

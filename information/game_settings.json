@@ -8,5 +8,9 @@
     "Current Gold": 10,
     "Stolen Gold": 0,
     "Wave Modifier": 1.2,
-    "Sell Multiplier": 0.5
+    "Sell Multiplier": 0.5,
+    "Wave Time 1": 0.2,
+    "Wave Time 2": 1.5,
+    "Initial Time": 10,
+    "Between Rounds": 20
 }

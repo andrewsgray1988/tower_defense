@@ -16,7 +16,11 @@ from gameconfig import (
     SETTINGS,
     ALL_BUILDABLES,
     ENEMY_LIST,
-    TOWER_CHOICES
+    TOWER_CHOICES,
+    WAVE_TIME_1,
+    WAVE_TIME_2,
+    INITIAL_TIME,
+    BETWEEN_ROUNDS
 )
 from functions.general import (
     reset_jsons,
@@ -56,8 +60,11 @@ class Game:
         self.tile_width = map_data["scaled_width"] / map_data["columns"]
         self.tile_height = map_data["scaled_height"] / map_data["rows"]
         self.tile_size = int(min(self.tile_width, self.tile_height))
-        self._wait_time = SETTINGS['Wait Time']
         self.wave_count = SETTINGS['Wave Count']
+        if self.wave_count == 1 and SETTINGS['Wave Time'] == INITIAL_TIME:
+            self._wait_time = INITIAL_TIME
+        else:
+            self._wait_time = SETTINGS['Wait Time']
 
         global _COIN_ASSET
         if _COIN_ASSET is None:
@@ -162,7 +169,7 @@ class Game:
         #Wave and Spawn handler
         if self._wait_time <= 0 and self.wave_count > 0:
             spawned_enemy = random.choice(ENEMY_LIST)
-            new_time = random.randint(2, 5)
+            new_time = random.uniform(WAVE_TIME_1, WAVE_TIME_2)
             self._wait_time = new_time
             SETTINGS["Wait Time"] = new_time
             self.spawn_enemy(spawned_enemy)
@@ -170,7 +177,7 @@ class Game:
             SETTINGS["Wave Count"] = self.wave_count
         elif self._wait_time <= 0 and self.wave_count <= 0:
             SETTINGS["Wave"] += 1
-            self._wait_time = 1
+            self._wait_time = BETWEEN_ROUNDS
             self.wave_count = 10
             SETTINGS["Wave Count"] = self.wave_count
         elif self._wait_time > 0:
@@ -289,7 +296,7 @@ class Game:
         return self.get_tile_state(col, row) == TileState.BUILDABLE
 
     #Tower placement logic
-    def place_tower(self, build_key, col, row):
+    def place_tower(self, build_key, col, row, direction=None):
         from gameconfig import TOWERS
         if not self.is_tile_buildable(col, row):
             return False
@@ -309,7 +316,11 @@ class Game:
         SETTINGS["Scrap"] -= cost
 
         build_class = CLASS_MAP[build_key]
-        obj = build_class(self, col, row)
+
+        if direction is not None:
+            obj = build_class(self, col, row, direction)
+        else:
+            obj = build_class(self, col, row)
 
         if build_key in TOWERS:
             self.towers.append(obj)
