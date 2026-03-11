@@ -63,12 +63,11 @@ class Enemy(CombatLogic):
         self._projectile_asset = enemy_data['projectile_asset']
         self.health = enemy_data['default_health'] * self._wave_modifier
         self.max_health = enemy_data['default_health'] * self._wave_modifier
-        self.armor = enemy_data['default_armor'] * self._wave_modifier
+        self.armor = enemy_data['default_armor']
         self.damage = enemy_data['default_damage'] * self._wave_modifier
         self.scrap = enemy_data['default_scrap'] * self._wave_modifier
         self.essence = enemy_data['default_essence'] * self._wave_modifier
         self.range = enemy_data['default_range'] * 1.2
-        self.armor_pierce = enemy_data['default_armor_pierce']
         self.attack_speed = enemy_data['default_attack_speed']
         self.move_speed = enemy_data['default_move_speed']
         self._alive = True
@@ -112,20 +111,20 @@ class Enemy(CombatLogic):
         bar_x = rect.left
         bar_y = rect.top - BAR_HEIGHT - BAR_PADDING
 
-        # Health ratio
+        #Health ratio
         health_ratio = max(self.health / self.max_health, 0)
 
-        # Background
+        #Background
         bg_rect = pygame.Rect(bar_x, bar_y, bar_width, BAR_HEIGHT)
         pygame.draw.rect(screen, (0, 0, 0), bg_rect)
 
-        # Health fill
+        #Health fill
         fill_width = int(bar_width * health_ratio)
         if fill_width > 0:
             fill_rect = pygame.Rect(bar_x, bar_y, fill_width, BAR_HEIGHT)
             pygame.draw.rect(screen, (200, 0, 0), fill_rect)
 
-        # Border
+        #Border
         pygame.draw.rect(screen, (255, 255, 255), bg_rect, 1)
 
     """
@@ -152,10 +151,7 @@ class Enemy(CombatLogic):
 
     #Damage trigger
     def _deal_damage(self, target):
-        effective_armor = max(target.armor - self.armor_pierce, 0)
-        reduction = min(effective_armor, 100) / 100
-        damage_dealt = self.damage * (1 - reduction)
-        target.take_damage(damage_dealt)
+        target.take_damage(self.damage)
 
     #Receive damage trigger
     def take_damage(self, damage_taken):

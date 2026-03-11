@@ -417,26 +417,247 @@ class Mage(Tower):
         screen.blit(level_surface, level_rect)
 
 class Flamethrower(Tower):
-    def __init__(self, game, col, row, direction):
+    def __init__(self, game, col, row):
         super().__init__(game, "Flamethrower", col, row)
-        self.direction = direction
-
+        self._beam_timer = 0
+        self._beam_duration = 1.0
+        self._beam_direction = None
 
     #Override for line damage
     def select_targets(self, enemies):
         tile_size = self.game.tile_size
-        selected = []
 
+        tower_col = int(self.x // tile_size)
+        tower_row = int(self.y // tile_size)
+
+        if not enemies:
+            return []
+
+        #Find all candidates in row
+        candidates = []
         for enemy in enemies:
             enemy_col = int(enemy.x // tile_size)
             enemy_row = int(enemy.y // tile_size)
+            if enemy_col == tower_col or enemy_row == tower_row:
+                candidates.append(enemy)
 
-            if self.direction == "North" and enemy_col == self.col and enemy_row < self.row and self.row - enemy_row <= self.range:
-                selected.append(enemy)
-            elif self.direction == "South" and enemy_col == self.col and enemy_row > self.row and enemy_row - self.row <= self.range:
-                selected.append(enemy)
-            elif self.direction == "West" and enemy_row == self.row and enemy_col < self.col and self.col - enemy_col <= self.range:
-                selected.append(enemy)
-            elif self.direction == "East" and enemy_row == self.row and enemy_col > self.col and enemy_col - self.col <= self.range:
-                selected.append(enemy)
+        if not candidates:
+            return []
+
+        #Pick closest candidate
+        primary = min(
+            candidates,
+            key=lambda e: abs(int(e.x // tile_size) - tower_col) + abs(int(e.y // tile_size) - tower_row)
+        )
+
+        target_col = int(primary.x // tile_size)
+        target_row = int(primary.y // tile_size)
+
+        selected = []
+
+        #Determine Direction
+        if target_col == tower_col:
+            direction = 1 if target_row > tower_row else -1
+            for enemy in candidates:
+                enemy_col = int(enemy.x // tile_size)
+                enemy_row = int(enemy.y // tile_size)
+                if enemy_col == tower_col:
+                    distance = (enemy_row - tower_row) * direction
+                    if 0 < distance <= self.range:
+                        selected.append(enemy)
+
+        elif target_row == tower_row:
+            direction = 1 if target_col > tower_col else -1
+            for enemy in candidates:
+                enemy_col = int(enemy.x // tile_size)
+                enemy_row = int(enemy.y // tile_size)
+                if enemy_row == tower_row:
+                    distance = (enemy_col - tower_col) * direction
+                    if 0 < distance <= self.range:
+                        selected.append(enemy)
+
         return selected
+
+    def _is_in_range(self, target):
+        tile_size = self.game.tile_size
+
+        tower_col = int(self.x // tile_size)
+        tower_row = int(self.y // tile_size)
+
+        enemy_col = int(target.x // tile_size)
+        enemy_row = int(target.y // tile_size)
+
+        # Only allow row or column enemies
+        if enemy_col == tower_col:
+            return abs(enemy_row - tower_row) <= self.range
+
+        if enemy_row == tower_row:
+            return abs(enemy_col - tower_col) <= self.range
+
+        return False
+
+    #Beam attack visual
+    def attack(self, targets):
+        if not targets:
+            return
+
+        tile_size = self.game.tile_size
+        tower_col = int(self.x // tile_size)
+        tower_row = int(self.y // tile_size)
+
+        primary = targets[0]
+
+        target_col = int(primary.x // tile_size)
+        target_row = int(primary.y // tile_size)
+
+        if target_col == tower_col:
+            self._beam_direction = "down" if target_row > tower_row else "up"
+        else:
+            self._beam_direction = "right" if target_col > tower_col else "left"
+
+        self._beam_timer = self._beam_duration
+
+        for target in targets:
+            self._deal_damage(target)
+
+    def draw(self, screen):
+        rect = self._asset.get_rect(center=(self.x, self.y))
+        screen.blit(self._asset, rect)
+
+        if self._beam_timer > 0 and self._beam_direction and self._alive:
+            tile_size = self.game.tile_size
+            length = self.range * tile_size
+
+            start = (self.x, self.y)
+
+            if self._beam_direction == "up":
+                end = (self.x, self.y - length)
+            elif self._beam_direction == "down":
+                end = (self.x, self.y + length)
+            elif self._beam_direction == "left":
+                end = (self.x - length, self.y)
+            elif self._beam_direction == "right":
+                end = (self.x + length, self.y)
+
+            pygame.draw.line(screen, (255, 120, 0), start, end, 8)
+
+        BAR_HEIGHT = 6
+        BAR_PADDING = 2
+
+        bar_width = rect.width
+        bar_x = rect.left
+        bar_y = rect.top + BAR_PADDING
+
+        #Bar Background
+        bg_rect = pygame.Rect(bar_x, bar_y, bar_width, BAR_HEIGHT)
+        pygame.draw.rect(screen, (0, 0, 0), bg_rect)
+
+        if self.health > 0 and self._alive:
+            #Health ratio
+            bar_ratio = max(self.health / self.max_health, 0)
+            fill_color = (200, 0, 0)
+
+        elif self.health <= 0 and not self._alive:
+            #Recharge ratio
+            bar_ratio = max(1 - (self._current_timer / self._respawn_timer), 0)
+            fill_color = (0, 200, 255)
+
+        fill_width = int(bar_width * bar_ratio)
+        if fill_width > 0:
+            fill_rect = pygame.Rect(bar_x, bar_y, fill_width, BAR_HEIGHT)
+            pygame.draw.rect(screen, fill_color, fill_rect)
+
+        #Bar Border
+        pygame.draw.rect(screen, (255, 255, 255), bg_rect, 1)
+
+        #Tower Number
+        num_surface = self._font.render(str(self.num), True, (255, 255, 255))
+        num_rect = num_surface.get_rect()
+        num_rect.bottomleft = (rect.left + 4, rect.bottom - 2)
+        screen.blit(num_surface, num_rect)
+
+        #Tower Level
+        level_surface = self._font.render(str(self.level), True, (255, 255, 0))
+        level_rect = level_surface.get_rect()
+        level_rect.bottomright = (rect.right - 4, rect.bottom - 2)
+        screen.blit(level_surface, level_rect)
+
+    #Add for beam timer visual
+    def update_combat(self, dt):
+        #Reduces attack timer if they've already attacked
+        if self._beam_timer > 0:
+            self._beam_timer -= dt
+        if self._attack_timer > 0:
+            self._attack_timer -= dt
+
+        self._validate_current_targets()
+
+        #Validates or acquires target(s)
+        if not self._current_targets:
+            self._current_targets = self._acquire_targets()
+
+        #Attacks if successful
+        if self._current_targets and self._attack_timer <= 0:
+            self.attack(self._current_targets)
+            self._attack_timer = self.attack_speed
+            self._current_targets = []
+
+class Expensive(Tower):
+    def __init__(self, game, col, row):
+        super().__init__(game, "Expensive", col, row)
+
+class Slacker(Tower):
+    def __init__(self, game, col, row):
+        super().__init__(game, "Slacker", col, row)
+
+    #Override
+    def set_stats(self):
+        from gameconfig import TOWERS, SETTINGS
+        tower_data = TOWERS[self._key]
+        reuse_queue = deque(sorted(tower_data['reuse_list']))
+
+        #Unique Identifier Number for name
+        if not reuse_queue:
+            self.num = tower_data['max']
+            tower_data['max'] += 1
+        else:
+            self.num = reuse_queue.popleft()
+
+        tower_data['reuse_list'] = list(reuse_queue)
+
+        #Base Stats
+        self.name = f"{self._key} Tower {self.num}"
+        self._projectile_asset = tower_data['projectile_asset']
+        self.max_health = tower_data['default_health']
+        self.health = self.max_health
+        if tower_data['default_armor'] >= 100:
+            self.armor = 100.0
+        else:
+            self.armor = tower_data['default_armor']
+        self.damage = tower_data['default_damage'] * 0.5
+        self.normal_damage = self.damage
+        self.armor_pierce = tower_data['default_armor_pierce']
+        self.range = tower_data['default_range'] * 1.2
+        self.attack_speed = (tower_data['default_attack_speed'] * 2)
+        self.normal_attack_speed = self.attack_speed
+        self._respawn_timer = tower_data['default_respawn_timer']
+        self._current_timer = self._respawn_timer
+        self._alive = True
+        self._sold = False
+        self.level = 1
+
+    #Increase desperation attack
+    def _deal_damage(self, target):
+        from gameconfig import SETTINGS
+        from models.enemies import AdventurerState
+        if target.state == AdventurerState.CARRYING_GOLD:
+            self.damage = self.normal_damage * 2
+            self._attack_timer = self.normal_attack_speed * 0.50
+        else:
+            self.damage = self.normal_damage
+            self._attack_timer = self.normal_attack_speed
+        effective_armor = max(target.armor - self.armor_pierce, 0)
+        reduction = min(effective_armor, 100) / 100
+        damage = self.damage * (1 - reduction)
+
+        target.take_damage(damage)

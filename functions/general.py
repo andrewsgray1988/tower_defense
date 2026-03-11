@@ -51,7 +51,7 @@ def reset_jsons():
     )
     default_towers = load_json("default_towers.json")
     SETTINGS['Wave'] = 1
-    SETTINGS['Scrap'] = 200
+    SETTINGS['Scrap'] = 100
     SETTINGS['Essence'] = 0.0
     SETTINGS['Current Gold'] = SETTINGS['Max Gold']
     SETTINGS['Stolen Gold'] = 0
@@ -77,7 +77,9 @@ def setup_class_map(choice_list):
         Piercer,
         Precision,
         Mage,
-        Flamethrower
+        Flamethrower,
+        Expensive,
+        Slacker
     )
     from models.structures import (
         Healer
@@ -119,6 +121,10 @@ def setup_class_map(choice_list):
                 class_map["Mage"] = Mage
             case "Flamethrower":
                 class_map["Flamethrower"] = Flamethrower
+            case "Expensive":
+                class_map["Expensive"] = Expensive
+            case "Slacker":
+                class_map["Slacker"] = Slacker
             case _:
                 return
     return class_map
