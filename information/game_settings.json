@@ -2,7 +2,7 @@
     "Wave": 1,
     "Wait Time": 10,
     "Wave Count": 10,
-    "Scrap": 200,
+    "Scrap": 100,
     "Essence": 0.0,
     "Max Gold": 10,
     "Current Gold": 10,
@@ -12,5 +12,6 @@
     "Wave Time 1": 0.2,
     "Wave Time 2": 1.5,
     "Initial Time": 10,
-    "Between Rounds": 20
+    "Between Rounds": 20,
+    "Desperation Modifier": 2
 }

@@ -23,9 +23,9 @@ Kickstarter release
   - Piercer - 3/2/2026
   - Precision - 3/2/2026
   - Mage - 3/2/2026
-  - Flamethrower
-  - Expensive
-  - Desperation
+  - Flamethrower - 3/5/2026
+  - Expensive - 3/5/2026
+  - Slacker - 3/5/2026
   - Initial Balancing
 
 ## Implement Structures
@@ -196,6 +196,7 @@ options menu**:
   - Lightning Storm
   - Speedrun
   - Poison Resistance
+  - Random Towers
 
 # 0.7 Build
   
@@ -330,7 +331,7 @@ options menu**:
   - - Challenge 49
   - - Challenge 50
   - Impossible Challenge
-  - - The Impossible Challenge (Unfair difficulty, all challenges active)
+  - - The Impossible Challenge (Unfair difficulty, all challenges active except Random Towers)
 
 ## Implement Endless Mode
 - **Implementing an endless roguelike mode - where players can adjust difficulty, have random or set challenges, and 
