@@ -7,7 +7,7 @@ Kickstarter release
 ## Implement Towers
 
 - **Implementing the rest of the player controlled Towers - Offensive based**:
-- - **Work in Progress** - 2/25/2026 - W.I.P.
+- - **Completed** - 2/25/2026 - 3/12/2026
   - Sword - 2/25/2026
   - Archer - 2/25/2026
   - Poison - 2/26/2026
@@ -26,12 +26,12 @@ Kickstarter release
   - Flamethrower - 3/5/2026
   - Expensive - 3/5/2026
   - Slacker - 3/5/2026
-  - Initial Balancing
+  - Initial Balancing - 3/12/2026
 
 ## Implement Structures
 
 - **Implementing the rest of the player controlled Structures - Non-offensive based**:
-- - **Not Started Yet**:
+- - **Work in Progress**: - 3/12/2026
   - Healer - 2/25/2026
   - Producer
   - Drainer
