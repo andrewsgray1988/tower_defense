@@ -93,6 +93,7 @@ class Game:
         """
         #Enemy Move Logic
         for enemy in self.enemies:
+            enemy.apply_slow_auras()
             enemy.move_along_path(self.map_data, dt)
             enemy.update_combat(dt)
             if enemy._is_poisoned:

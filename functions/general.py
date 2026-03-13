@@ -50,6 +50,7 @@ def reset_jsons():
         save_all_jsons
     )
     default_towers = load_json("default_towers.json")
+    default_structures = load_json("default_structures.json")
     SETTINGS['Wave'] = 1
     SETTINGS['Scrap'] = 100
     SETTINGS['Essence'] = 0.0
@@ -58,6 +59,7 @@ def reset_jsons():
     SETTINGS['Wait Time'] = 10
     SETTINGS['Wave Count'] = 10
     gameconfig.TOWERS = default_towers
+    gameconfig.STRUCTURES = default_structures
     save_all_jsons()
 
 def setup_class_map(choice_list):
@@ -82,7 +84,10 @@ def setup_class_map(choice_list):
         Slacker
     )
     from models.structures import (
-        Healer
+        Healer,
+        Producer,
+        Drainer,
+        Distractor
     )
     class_map = {}
     for choice in choice_list:
@@ -125,6 +130,12 @@ def setup_class_map(choice_list):
                 class_map["Expensive"] = Expensive
             case "Slacker":
                 class_map["Slacker"] = Slacker
+            case "Producer":
+                class_map["Producer"] = Producer
+            case "Drainer":
+                class_map["Drainer"] = Drainer
+            case "Distractor":
+                class_map["Distractor"] = Distractor
             case _:
                 return
     return class_map

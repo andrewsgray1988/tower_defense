@@ -33,8 +33,8 @@ Kickstarter release
 - **Implementing the rest of the player controlled Structures - Non-offensive based**:
 - - **Work in Progress**: - 3/12/2026
   - Healer - 2/25/2026
-  - Producer
-  - Drainer
+  - Producer - 3/12/2026
+  - Drainer - 3/12/2026
   - Distraction
   - Motivator
   - Quicker

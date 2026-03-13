@@ -58,10 +58,6 @@ class Tower(CombatLogic):
         self._projectile_asset = tower_data['projectile_asset']
         self.max_health = tower_data['default_health']
         self.health = self.max_health
-        if tower_data['default_armor'] >= 100:
-            self.armor = 100.0
-        else:
-            self.armor = tower_data['default_armor']
         self.damage = tower_data['default_damage']
         self.armor_pierce = tower_data['default_armor_pierce']
         self.range = tower_data['default_range'] * 1.2
