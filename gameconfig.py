@@ -21,7 +21,7 @@ ALL_BUILDABLES = {**TOWERS, **STRUCTURES}
 #Mutable Game Settings
 GAME_STATE = "menu"
 RUNNING = False
-TOWER_CHOICES = ["Sword", "Poison"]
+TOWER_CHOICES = ["Sword", "Poison", "Producer", "Distractor"]
 WAVE_MODIFIER = SETTINGS["Wave Modifier"]
 WAVE_TIME_1 = SETTINGS["Wave Time 1"]
 WAVE_TIME_2 = SETTINGS["Wave Time 2"]

@@ -16,7 +16,7 @@
         "default_power_multiplier": 1.5,
         "default_upgrade_cost_multiplier": 1.5
     },
-    "Producer": {
+  "Producer": {
         "max": 1,
         "asset": "towers/Staff.png",
         "projectile_asset": "None",
@@ -33,7 +33,7 @@
         "default_power_multiplier": 1.5,
         "default_upgrade_cost_multiplier": 1.5
     },
-    "Drainer": {
+  "Drainer": {
         "max": 1,
         "asset": "towers/Staff.png",
         "projectile_asset": "None",
@@ -50,7 +50,7 @@
         "default_power_multiplier": 1.5,
         "default_upgrade_cost_multiplier": 1.5
     },
-    "Distractor": {
+  "Distractor": {
         "max": 1,
         "asset": "towers/Staff.png",
         "projectile_asset": "None",

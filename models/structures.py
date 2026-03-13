@@ -55,10 +55,6 @@ class Structure(CombatLogic):
         self._projectile_asset = structure_data['projectile_asset']
         self.max_health = structure_data['default_health']
         self.health = self.max_health
-        if structure_data['default_armor'] >= 100:
-            self.armor = 100.0
-        else:
-            self.armor = structure_data['default_armor']
         self.power = structure_data['default_power']
         self.range = structure_data['default_range']
         self.attack_speed = structure_data['default_attack_speed']
@@ -238,8 +234,65 @@ class Healer(Structure):
             return [self]
         return []
 
+    #Heals the target
     def _affect_target(self, target):
         if (self.power + target.health) >= target.max_health:
             target.health = target.max_health
         else:
             target.health += self.power
+
+class Producer(Structure):
+    def __init__(self, game, col, row):
+        super().__init__(game, "Producer", col, row)
+        self._attack_timer = self.attack_speed
+
+    #Override and generate resources passively
+    def update_combat(self, dt):
+        if self._attack_timer > 0:
+            self._attack_timer -= dt
+        else:
+            self._attack_timer = self.attack_speed
+            self.attack(None)
+
+    #Override and generate scrap
+    def attack(self, targets):
+        SETTINGS["Scrap"] += self.power
+
+class Drainer(Structure):
+    def __init__(self, game, col, row):
+        super().__init__(game, "Drainer", col, row)
+        self._attack_timer = self.attack_speed
+
+    #Override and generate resources over time
+    def update_combat(self, dt):
+        if self._attack_timer > 0:
+            self._attack_timer -= dt
+        else:
+            self._attack_timer = self.attack_speed
+            self.attack(None)
+
+    #Override and generate Essence
+    def attack(self, targets):
+        SETTINGS["Essence"] += self.power
+
+class Distractor(Structure):
+    def __init__(self, game, col, row):
+        super().__init__(game, "Distractor", col, row)
+        self._affected_targets = []
+
+    #Override and find targets in range to affect
+    def update_combat(self, dt):
+        self._affected_targets = [t for t in self._affected_targets if t._alive]
+        self._validate_current_targets()
+
+        #Validates or acquires target(s)
+        if not self._current_targets:
+            self._current_targets = self._acquire_targets()
+
+        for target in self.game.enemies:
+            if target in self._current_targets and target not in self._affected_targets:
+                self._affected_targets.append(target)
+                target.move_speed *= self.power
+            elif target not in self._current_targets and target in self._affected_targets:
+                self._affected_targets.remove(target)
+                target.move_speed /= self.power
