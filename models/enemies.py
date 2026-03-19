@@ -64,14 +64,15 @@ class Enemy(CombatLogic):
         self.health = enemy_data['default_health'] * self._wave_modifier
         self.max_health = enemy_data['default_health'] * self._wave_modifier
         self.armor = enemy_data['default_armor']
-        self.damage = enemy_data['default_damage'] * self._wave_modifier
+        self._base_damage = enemy_data['default_damage'] * self._wave_modifier
+        self.damage = self._base_damage
         self.scrap = enemy_data['default_scrap'] * self._wave_modifier
         self.essence = enemy_data['default_essence'] * self._wave_modifier
         self.range = enemy_data['default_range'] * 1.2
-        self.base_attack_speed = enemy_data['default_attack_speed']
-        self.attack_speed = self.base_attack_speed
-        self.base_move_speed = enemy_data['default_move_speed']
-        self.move_speed = self.base_move_speed
+        self._base_attack_speed = enemy_data['default_attack_speed']
+        self.attack_speed = self._base_attack_speed
+        self._base_move_speed = enemy_data['default_move_speed']
+        self.move_speed = self._base_move_speed
         self._alive = True
 
     #Visual representation of the enemy
@@ -154,6 +155,7 @@ class Enemy(CombatLogic):
     #Damage trigger
     def _deal_damage(self, target):
         target.take_damage(self.damage)
+        return self.damage, "damage"
 
     #Receive damage trigger
     def take_damage(self, damage_taken):
@@ -179,8 +181,26 @@ class Enemy(CombatLogic):
     def select_targets(self, candidates):
         if not candidates:
             return []
-        closest = min(candidates, key=lambda t: math.hypot(self.x - t.x, self.y - t.y))
-        return [closest]
+        # Prioritize Defenders
+        defenders = [c for c in candidates if hasattr(c, "_key") and c._key == "Defender"]
+        if defenders:
+            target = min(defenders, key=lambda t: math.hypot(self.x - t.x, self.y - t.y))
+            return [target]
+
+        # Prioritize Towers if no Defenders
+        from models.towers import Tower
+        towers = [c for c in candidates if isinstance(c, Tower)]
+        if towers:
+            target = min(towers, key=lambda t: math.hypot(self.x - t.x, self.y - t.y))
+            return [target]
+
+        # Prioritize Structures if no Defenders or Towers
+        from models.structures import Structure
+        structures = [c for c in candidates if isinstance(c, Structure)]
+        if structures:
+            target = min(structures, key=lambda t: math.hypot(self.x - t.x, self.y - t.y))
+            return [target]
+        return []
 
     #Attack function
     def attack(self, targets):
@@ -244,22 +264,6 @@ class Enemy(CombatLogic):
         else:
             self.x += dx / distance * move_distance
             self.y += dy / distance * move_distance
-
-    #Applies
-    def apply_slow_auras(self):
-        slow_multiplier = 1
-        for structure in self.game.structures:
-            if structure._key != "Distractor":
-                continue
-
-            dx = self.x - structure.x
-            dy = self.y - structure.y
-            distance = math.hypot(dx, dy)
-
-            if distance <= structure.range:
-                slow_multiplier *= structure.power
-
-        self.move_speed = self.base_move_speed * slow_multiplier
 
     #Detects which tile the enemy is currently on
     def get_current_tile(self):

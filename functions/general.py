@@ -87,7 +87,11 @@ def setup_class_map(choice_list):
         Healer,
         Producer,
         Drainer,
-        Distractor
+        Distractor,
+        Motivator,
+        Quicker,
+        Armor,
+        Defender
     )
     class_map = {}
     for choice in choice_list:
@@ -136,6 +140,15 @@ def setup_class_map(choice_list):
                 class_map["Drainer"] = Drainer
             case "Distractor":
                 class_map["Distractor"] = Distractor
+            case "Motivator":
+                class_map["Motivator"] = Motivator
+            case "Quicker":
+                class_map["Quicker"] = Quicker
+            case "Armor":
+                class_map["Armor"] = Armor
+            case "Defender":
+                class_map["Defender"] = Defender
             case _:
                 return
     return class_map
+

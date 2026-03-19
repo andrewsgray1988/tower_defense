@@ -47,6 +47,7 @@ class Game:
         self.towers = []
         self.structures = []
         self.projectiles = []
+        self.floating_texts = []
         self.gold_drops = {}
         self.stored_gold = SETTINGS['Max Gold']
         self.tile_states = {}
@@ -93,9 +94,8 @@ class Game:
         """
         #Enemy Move Logic
         for enemy in self.enemies:
-            enemy.apply_slow_auras()
-            enemy.move_along_path(self.map_data, dt)
             enemy.update_combat(dt)
+            enemy.move_along_path(self.map_data, dt)
             if enemy._is_poisoned:
                 enemy.take_damage(enemy._poison_damage)
 
@@ -185,6 +185,10 @@ class Game:
             self._wait_time -= dt
             SETTINGS["Wait Time"] = self._wait_time
 
+        for text in self.floating_texts:
+            text.update(dt)
+        self.floating_texts = [t for t in self.floating_texts if t._alive]
+
         #Gameover Trigger
         if SETTINGS["Stolen Gold"] == SETTINGS["Max Gold"]:
             reset_jsons()
@@ -214,6 +218,8 @@ class Game:
             structure.draw(screen)
         for projectile in self.projectiles:
             projectile.draw(screen)
+        for text in self.floating_texts:
+            text.draw(screen)
 
     """
     Tile Logic
