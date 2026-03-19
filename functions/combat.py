@@ -131,3 +131,9 @@ class CombatLogic:
             case "Slow":
                 unit.move_speed *= self.power
                 unit.attack_speed *= self.power
+            case "Up Damage":
+                unit.damage *= self.power
+            case "Speed":
+                unit.attack_speed /= self.power
+            case "Down Damage":
+                unit.damage /= self.power

@@ -31,16 +31,16 @@ Kickstarter release
 ## Implement Structures
 
 - **Implementing the rest of the player controlled Structures - Non-offensive based**:
-- - **Work in Progress**: - 3/12/2026
+- - **Completed**: - 3/12/2026 - 3/19/2026
   - Healer - 2/25/2026
   - Producer - 3/12/2026
   - Drainer - 3/12/2026
   - Distractor - 3/19/2026
-  - Motivator
-  - Quicker
-  - Magnet
-  - Defender
-  - Initial Balancing
+  - Motivator - 3/19/2026
+  - Quicker - 3/19/2026
+  - Armor - 3/19/2026
+  - Defender - 3/19/2026
+  - Initial Balancing - 3/19/2026
 
 # 0.3 Build
 
@@ -334,11 +334,17 @@ options menu**:
   - - The Impossible Challenge (Unfair difficulty, all challenges active except Random Towers)
 
 ## Implement Endless Mode
-- **Implementing an endless roguelike mode - where players can adjust difficulty, have random or set challenges, and 
+- **Implementing an endless mode - where players can adjust difficulty, have random or set challenges, and 
 last as long as they can**:
 - - **Not Started Yet**:
   - Difficulty Adjustment
   - Challenge Selection
+
+## Roguelite mode
+- **Implementing a Roguelite mode - where players can draft modifiers and towers during their play, and last 
+as long as they can**:
+- - **Not Started Yet**:
+  - Random Modifiers
 
 ## Sound Design
 - **Implement sound for actions**:

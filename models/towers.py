@@ -63,6 +63,7 @@ class Tower(CombatLogic):
         self.armor_pierce = tower_data['default_armor_pierce']
         self.range = tower_data['default_range'] * 1.2
         self._base_attack_speed = tower_data['default_attack_speed']
+        self.move_speed = 1 #Dead number/stat
         self.attack_speed = self._base_attack_speed
         self._respawn_timer = tower_data['default_respawn_timer']
         self._current_timer = self._respawn_timer

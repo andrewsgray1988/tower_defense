@@ -100,7 +100,7 @@ class Structure(CombatLogic):
 
         bar_width = rect.width
         bar_x = rect.left
-        bar_y = rect.top - BAR_HEIGHT - BAR_PADDING
+        bar_y = rect.top + BAR_PADDING
 
         #Bar Background
         bg_rect = pygame.Rect(bar_x, bar_y, bar_width, BAR_HEIGHT)
@@ -277,6 +277,37 @@ class Distractor(Structure):
         self._has_aura = True
         self._aura_targets = "Enemy"
         self._aura_name = "Slow"
+
+    def attack(self, targets):
+        return
+
+class Motivator(Structure):
+    def __init__(self, game, col, row):
+        super().__init__(game, "Motivator", col, row)
+        self._has_aura = True
+        self._aura_targets = "Tower"
+        self._aura_name = "Up Damage"
+
+    def attack(self, targets):
+        return
+
+class Quicker(Structure):
+    def __init__(self, game, col, row):
+        super().__init__(game, "Quicker", col, row)
+        self._has_aura = True
+        self._aura_targets = "Tower"
+        self._aura_name = "Speed"
+
+class Armor(Structure):
+    def __init__(self, game, col, row):
+        super().__init__(game, "Armor", col, row)
+        self._has_aura = True
+        self._aura_targets = "Enemy"
+        self._aura_name = "Down Damage"
+
+class Defender (Structure):
+    def __init__(self, game, col, row):
+        super().__init__(game, "Defender", col, row)
 
     def attack(self, targets):
         return
