@@ -18,7 +18,7 @@ from constants import (
 )
 from models.projectile import Projectile
 
-#Cache images to prevent multile loads per structure
+#Cache images to prevent multiple loads per structure
 _STRUCTURE_ASSET_CACHE = {}
 
 #Structure storage class
@@ -163,20 +163,12 @@ class Structure(CombatLogic):
     #Action trigger
     def attack(self, targets):
         for target in targets:
-            projectile = Projectile(
-                game=self.game,
-                start_x=self.x,
-                start_y=self.y,
-                target=target,
-                damage_callback=self._affect_target,
-                speed=800,
-                projectile=self._projectile_asset
-            )
+            projectile = Projectile(self.game, self.x, self.y, target, self._affect_target, 800, self._projectile_asset)
             self.game.projectiles.append(projectile)
 
     #Default affect target - Needs to update per subclass
     def _affect_target(self, target):
-        return
+        return None, None
 
     #Structure revival logic
     def revive_structure(self):
@@ -237,9 +229,13 @@ class Healer(Structure):
     #Heals the target
     def _affect_target(self, target):
         if (self.power + target.health) >= target.max_health:
+            heal_amount = target.max_health - target.health
             target.health = target.max_health
         else:
+            heal_amount = self.power
             target.health += self.power
+        return heal_amount, "heal"
+
 
 class Producer(Structure):
     def __init__(self, game, col, row):
@@ -278,21 +274,9 @@ class Drainer(Structure):
 class Distractor(Structure):
     def __init__(self, game, col, row):
         super().__init__(game, "Distractor", col, row)
-        self._affected_targets = []
+        self._has_aura = True
+        self._aura_targets = "Enemy"
+        self._aura_name = "Slow"
 
-    #Override and find targets in range to affect
-    def update_combat(self, dt):
-        self._affected_targets = [t for t in self._affected_targets if t._alive]
-        self._validate_current_targets()
-
-        #Validates or acquires target(s)
-        if not self._current_targets:
-            self._current_targets = self._acquire_targets()
-
-        for target in self.game.enemies:
-            if target in self._current_targets and target not in self._affected_targets:
-                self._affected_targets.append(target)
-                target.move_speed *= self.power
-            elif target not in self._current_targets and target in self._affected_targets:
-                self._affected_targets.remove(target)
-                target.move_speed /= self.power
+    def attack(self, targets):
+        return

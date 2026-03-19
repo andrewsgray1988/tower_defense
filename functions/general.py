@@ -139,3 +139,4 @@ def setup_class_map(choice_list):
             case _:
                 return
     return class_map
+

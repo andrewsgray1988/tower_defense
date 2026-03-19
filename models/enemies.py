@@ -68,10 +68,10 @@ class Enemy(CombatLogic):
         self.scrap = enemy_data['default_scrap'] * self._wave_modifier
         self.essence = enemy_data['default_essence'] * self._wave_modifier
         self.range = enemy_data['default_range'] * 1.2
-        self.base_attack_speed = enemy_data['default_attack_speed']
-        self.attack_speed = self.base_attack_speed
-        self.base_move_speed = enemy_data['default_move_speed']
-        self.move_speed = self.base_move_speed
+        self._base_attack_speed = enemy_data['default_attack_speed']
+        self.attack_speed = self._base_attack_speed
+        self._base_move_speed = enemy_data['default_move_speed']
+        self.move_speed = self._base_move_speed
         self._alive = True
 
     #Visual representation of the enemy
@@ -154,6 +154,7 @@ class Enemy(CombatLogic):
     #Damage trigger
     def _deal_damage(self, target):
         target.take_damage(self.damage)
+        return self.damage, "damage"
 
     #Receive damage trigger
     def take_damage(self, damage_taken):
@@ -244,22 +245,6 @@ class Enemy(CombatLogic):
         else:
             self.x += dx / distance * move_distance
             self.y += dy / distance * move_distance
-
-    #Applies
-    def apply_slow_auras(self):
-        slow_multiplier = 1
-        for structure in self.game.structures:
-            if structure._key != "Distractor":
-                continue
-
-            dx = self.x - structure.x
-            dy = self.y - structure.y
-            distance = math.hypot(dx, dy)
-
-            if distance <= structure.range:
-                slow_multiplier *= structure.power
-
-        self.move_speed = self.base_move_speed * slow_multiplier
 
     #Detects which tile the enemy is currently on
     def get_current_tile(self):

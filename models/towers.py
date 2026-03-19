@@ -58,10 +58,12 @@ class Tower(CombatLogic):
         self._projectile_asset = tower_data['projectile_asset']
         self.max_health = tower_data['default_health']
         self.health = self.max_health
-        self.damage = tower_data['default_damage']
+        self._base_damage = tower_data['default_damage']
+        self.damage = self._base_damage
         self.armor_pierce = tower_data['default_armor_pierce']
         self.range = tower_data['default_range'] * 1.2
-        self.attack_speed = tower_data['default_attack_speed']
+        self._base_attack_speed = tower_data['default_attack_speed']
+        self.attack_speed = self._base_attack_speed
         self._respawn_timer = tower_data['default_respawn_timer']
         self._current_timer = self._respawn_timer
         self._alive = True
@@ -180,6 +182,7 @@ class Tower(CombatLogic):
         reduction = min(effective_armor, 100) / 100
         damage = self.damage * (1 - reduction)
         target.take_damage(damage)
+        return damage, "damage"
 
     #Tower revival logic
     def revive_tower(self):
@@ -205,7 +208,8 @@ class Tower(CombatLogic):
         self.sell_amount = round(self.sell_amount + (new_cost_amount * SETTINGS['Sell Multiplier']), 2)
         self.health += health_num
         self.max_health = round(self.max_health + health_num)
-        self.damage = round(self.damage * self._damage_multiplier, 2)
+        self._base_damage = round(self._base_damage * self._damage_multiplier, 2)
+        self.damage = self._base_damage
         self.upgrade_cost = round(self.upgrade_cost * self._upgrade_cost_multiplier, 2)
         self.level += 1
 

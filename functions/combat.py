@@ -9,9 +9,13 @@ class CombatLogic:
     def __init__(self):
         self._attack_timer = 0
         self._current_targets = []
+        self._has_aura = False
+        self._aura_targets = None
+        self._aura_name = None
 
     #Combat checks
     def update_combat(self, dt):
+        self._apply_aura_effects()
         #Reduces attack timer if they've already attacked
         if self._attack_timer > 0:
             self._attack_timer -= dt
@@ -87,3 +91,43 @@ class CombatLogic:
         range_pixels = self.range * tile_size
 
         return distance_pixels <= range_pixels
+
+    """
+    Aura Logic
+    """
+    #Applies aura affects from Structures with auras
+    def _apply_aura_effects(self):
+        if hasattr(self, "_base_move_speed"):
+            self.move_speed = self._base_move_speed
+        if hasattr(self, "_base_attack_speed"):
+            self.attack_speed = self._base_attack_speed
+        if hasattr(self, "_base_damage"):
+            self.damage = self._base_damage
+
+        for structure in self.game.structures:
+            if not getattr(structure, "_has_aura", False):
+                continue
+
+            if not structure._alive:
+                continue
+
+            if not structure._is_in_range(self):
+                continue
+            structure.apply_aura(self)
+
+    # Aura logic
+    def apply_aura(self, unit):
+        if self._aura_targets == "Tower":
+            from models.towers import Tower
+            if not isinstance(unit, Tower):
+                return
+
+        elif self._aura_targets == "Enemy":
+            from models.enemies import Enemy
+            if not isinstance(unit, Enemy):
+                return
+
+        match self._aura_name:
+            case "Slow":
+                unit.move_speed *= self.power
+                unit.attack_speed *= self.power

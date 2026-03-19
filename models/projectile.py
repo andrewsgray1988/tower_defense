@@ -75,7 +75,16 @@ class Projectile:
             self._alive = False
             return
 
-        self.damage_callback(self.target)
+        amount, dmg_type = self.damage_callback(self.target)
+        from assets.visuals import spawn_floating_text
+
+        spawn_floating_text(
+            self.game,
+            self.target.x,
+            self.target.y,
+            round(float(amount), 3),
+            dmg_type
+        )
 
         if self._split_radius and not self._has_split:
             self._split_projectiles()

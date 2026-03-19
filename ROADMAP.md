@@ -35,7 +35,7 @@ Kickstarter release
   - Healer - 2/25/2026
   - Producer - 3/12/2026
   - Drainer - 3/12/2026
-  - Distraction
+  - Distractor - 3/19/2026
   - Motivator
   - Quicker
   - Magnet

@@ -226,6 +226,13 @@ class UIManager:
 
         self.button_rects = {}
 
+        total_height = len(self.build_options) * (button_height + padding)
+
+        screen_height = screen.get_height()
+
+        if menu_y + total_height > screen_height:
+            menu_y = screen_height - total_height - 10
+
         for i, tower_key in enumerate(self.build_options):
             rect = pygame.Rect(
                 menu_x,
