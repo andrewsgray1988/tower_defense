@@ -47,23 +47,22 @@ Kickstarter release
 ## Implement Enemies
 
 - **Implementing the rest of the Enemy types**:
-- - **Not Started Yet**:
+- - **Completed**: 3/20/2026 - 3/23/2026
   - Fighter - 2/25/2026
-  - Barbarian
-  - Cleric
-  - Knight
-  - Monk
-  - Ninja
-  - Paladin
-  - Pirate
-  - Ranger
-  - Rogue
-  - Sorcerer
-  - Warlock
-  - Wizard
-  - Druid
-  - Bard
-  - Initial Balancing
+  - Barbarian - 3/20/2026
+  - Cleric - 3/20/2026
+  - Knight - 3/20/2026
+  - Monk - 3/20/2026
+  - Ninja - 3/20/2026
+  - Paladin - 3/21/2026
+  - Ranger - 3/21/2026
+  - Rogue - 3/21/2026
+  - Sorcerer - 3/21/2026
+  - Warlock - 3/21/2026
+  - Wizard - 3/21/2026
+  - Druid - 3/22/2026
+  - Bard - 3/22/2026
+  - Initial Balancing - 3/23/2026
 
 ## Implement Bosses
 

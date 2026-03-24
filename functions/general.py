@@ -7,6 +7,7 @@ import json
 import threading
 import pygame
 import sys
+import random
 
 from models.towers import Sludger
 
@@ -46,11 +47,11 @@ def reset_jsons():
     import gameconfig
     from gameconfig import (
         SETTINGS,
-        STRUCTURES,
         save_all_jsons
     )
     default_towers = load_json("default_towers.json")
     default_structures = load_json("default_structures.json")
+    default_enemies = load_json("default_enemies.json")
     SETTINGS['Wave'] = 1
     SETTINGS['Scrap'] = 100
     SETTINGS['Essence'] = 0.0
@@ -60,6 +61,7 @@ def reset_jsons():
     SETTINGS['Wave Count'] = 10
     gameconfig.TOWERS = default_towers
     gameconfig.STRUCTURES = default_structures
+    gameconfig.ENEMIES = default_enemies
     save_all_jsons()
 
 def setup_class_map(choice_list):
@@ -152,3 +154,9 @@ def setup_class_map(choice_list):
                 return
     return class_map
 
+def random_enemy_buff():
+    enemy_list = ["Barbarian", "Cleric", "Fighter", "Knight", "Monk", "Ninja", "Paladin", "Ranger", "Rogue", "Sorcerer", "Warlock", "Wizard"]
+    druid_choice = enemy_list.pop(random.randrange(len(enemy_list)))
+    bard_choice = enemy_list.pop(random.randrange(len(enemy_list)))
+    print(druid_choice, bard_choice)
+    return druid_choice, bard_choice

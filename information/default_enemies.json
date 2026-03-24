@@ -1,0 +1,160 @@
+{
+    "Barbarian": {
+        "name": "Barbarian",
+        "asset": "enemies/Barbarian.png",
+        "projectile_asset": "Sword",
+        "default_health": 80.0,
+        "default_armor": 25,
+        "default_damage": 10.0,
+        "default_range": 1,
+        "default_attack_speed": 2.0,
+        "default_move_speed": 1.7
+    },
+    "Bard": {
+        "name": "Bard",
+        "asset": "enemies/Bard.png",
+        "projectile_asset": "Sword",
+        "default_health": 25.0,
+        "default_armor": 50,
+        "default_damage": 10.0,
+        "default_aura_power": 2,
+        "default_range": 1,
+        "default_attack_speed": 2.0,
+        "default_move_speed": 1.3
+    },
+    "Cleric": {
+        "name": "Cleric",
+        "asset": "enemies/Cleric.png",
+        "projectile_asset": "Potion",
+        "default_health": 25.0,
+        "default_armor": 50.0,
+        "default_damage": 10.0,
+        "default_range": 3,
+        "default_attack_speed": 2.0,
+        "default_move_speed": 1.5
+    },
+    "Druid": {
+        "name": "Druid",
+        "asset": "enemies/Druid.png",
+        "projectile_asset": "Potion",
+        "default_health": 25.0,
+        "default_armor": 25.0,
+        "default_damage": 1.0,
+        "default_aura_power": 5,
+        "default_range": 1,
+        "default_attack_speed": 2.0,
+        "default_move_speed": 1.5
+    },
+    "Fighter": {
+        "name": "Fighter",
+        "asset": "enemies/Fighter.png",
+        "projectile_asset": "Sword",
+        "default_health": 40.0,
+        "default_armor": 50.0,
+        "default_damage": 15.0,
+        "default_range": 1,
+        "default_attack_speed": 1.5,
+        "default_move_speed": 1.4
+    },
+    "Knight": {
+        "name": "Knight",
+        "asset": "enemies/Knight.png",
+        "projectile_asset": "Sword",
+        "default_health": 35.0,
+        "default_armor": 75,
+        "default_damage": 15.0,
+        "default_range": 1,
+        "default_attack_speed": 2.0,
+        "default_move_speed": 2.0
+    },
+    "Monk": {
+        "name": "Monk",
+        "asset": "enemies/Monk.png",
+        "projectile_asset": "Sword",
+        "default_health": 25.0,
+        "default_armor": 25.0,
+        "default_damage": 8.0,
+        "default_range": 1,
+        "default_attack_speed": 1.0,
+        "default_move_speed": 0.8
+    },
+    "Ninja": {
+        "name": "Ninja",
+        "asset": "enemies/Ninja.png",
+        "projectile_asset": "Sword",
+        "default_health": 25.0,
+        "default_armor": 25.0,
+        "default_damage": 8.0,
+        "default_range": 1,
+        "default_attack_speed": 1.0,
+        "default_move_speed": 1.3
+    },
+    "Paladin": {
+        "name": "Paladin",
+        "asset": "enemies/Paladin.png",
+        "projectile_asset": "Sword",
+        "default_health": 35.0,
+        "default_armor": 75,
+        "default_damage": 10.0,
+        "default_range": 1,
+        "default_attack_speed": 2.0,
+        "default_move_speed": 1.4
+    },
+    "Ranger": {
+        "name": "Ranger",
+        "asset": "enemies/Ranger.png",
+        "projectile_asset": "Arrow",
+        "default_health": 25.0,
+        "default_armor": 25.0,
+        "default_damage": 10.0,
+        "default_range": 3,
+        "default_attack_speed": 1.5,
+        "default_move_speed": 1.4
+    },
+    "Rogue": {
+        "name": "Rogue",
+        "asset": "enemies/Rogue.png",
+        "projectile_asset": "Sword",
+        "default_health": 25.0,
+        "default_armor": 25.0,
+        "default_damage": 6.0,
+        "default_range": 1,
+        "default_attack_speed": 0.5,
+        "default_move_speed": 1.4
+    },
+    "Sorcerer": {
+        "name": "Sorcerer",
+        "asset": "enemies/Sorcerer.png",
+        "projectile_asset": "Potion",
+        "default_health": 25.0,
+        "default_armor": 25.0,
+        "default_damage": 20.0,
+        "default_range": 3,
+        "default_attack_speed": 2.0,
+        "default_move_speed": 1.0
+    },
+    "Warlock": {
+        "name": "Warlock",
+        "asset": "enemies/Warlock.png",
+        "projectile_asset": "Potion",
+        "default_health": 25.0,
+        "default_armor": 25.0,
+        "default_damage": 10.0,
+        "default_aura_power": 1.5,
+        "default_range": 3,
+        "default_attack_speed": 2.0,
+        "default_move_speed": 2.0
+    },
+    "Wizard": {
+        "name": "Wizard",
+        "asset": "enemies/Wizard.png",
+        "projectile_asset": "Potion",
+        "default_health": 25.0,
+        "default_armor": 25.0,
+        "default_damage": 10.0,
+        "default_aura_power": 1.5,
+        "default_range": 3,
+        "default_attack_speed": 1.7,
+        "default_move_speed": 1.0
+    }
+}

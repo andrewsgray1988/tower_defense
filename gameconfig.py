@@ -27,7 +27,7 @@ WAVE_TIME_1 = SETTINGS["Wave Time 1"]
 WAVE_TIME_2 = SETTINGS["Wave Time 2"]
 INITIAL_TIME = SETTINGS["Initial Time"]
 BETWEEN_ROUNDS = SETTINGS["Between Rounds"]
-ENEMY_LIST = ["Fighter"]
+ENEMY_LIST = ["Bard"]
 
 #Periodically saves the JSONs to keep data
 def save_all_jsons():

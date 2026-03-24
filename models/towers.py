@@ -59,11 +59,12 @@ class Tower(CombatLogic):
         self.max_health = tower_data['default_health']
         self.health = self.max_health
         self._base_damage = tower_data['default_damage']
-        self.damage = self._base_damage
+        self.power = self._base_damage
         self.armor_pierce = tower_data['default_armor_pierce']
         self.range = tower_data['default_range'] * 1.2
         self._base_attack_speed = tower_data['default_attack_speed']
-        self.move_speed = 1 #Dead number/stat
+        self._base_move_speed = 1 #Dead number/stat
+        self.move_speed = self._base_move_speed
         self.attack_speed = self._base_attack_speed
         self._respawn_timer = tower_data['default_respawn_timer']
         self._current_timer = self._respawn_timer
@@ -181,7 +182,7 @@ class Tower(CombatLogic):
     def _deal_damage(self, target):
         effective_armor = max(target.armor - self.armor_pierce, 0)
         reduction = min(effective_armor, 100) / 100
-        damage = self.damage * (1 - reduction)
+        damage = self.power * (1 - reduction)
         target.take_damage(damage)
         return damage, "damage"
 
@@ -210,7 +211,7 @@ class Tower(CombatLogic):
         self.health += health_num
         self.max_health = round(self.max_health + health_num)
         self._base_damage = round(self._base_damage * self._damage_multiplier, 2)
-        self.damage = self._base_damage
+        self.power = self._base_damage
         self.upgrade_cost = round(self.upgrade_cost * self._upgrade_cost_multiplier, 2)
         self.level += 1
 
@@ -233,7 +234,7 @@ class Poison(Tower):
     def _deal_damage(self, target):
         if not target._is_poisoned:
             target._is_poisoned = True
-        target._poison_damage += self.damage
+        target._poison_damage += self.power
 
 class Spear(Tower):
     def __init__(self, game, col, row):
@@ -255,7 +256,7 @@ class Sludger(Tower):
             if distance <= splash_radius:
                 if not enemy._is_poisoned:
                     enemy._is_poisoned = True
-                enemy._poison_damage += self.damage
+                enemy._poison_damage += self.power
 
     #Attack override for splash
     def attack(self, targets):
@@ -288,7 +289,7 @@ class Grenadier(Tower):
             if distance <= splash_radius:
                 effective_armor = max(enemy.armor - self.armor_pierce, 0)
                 reduction = min(effective_armor, 100) / 100
-                damage = self.damage * (1 - reduction)
+                damage = self.power * (1 - reduction)
                 enemy.take_damage(damage)
 
     def attack(self, targets):
@@ -339,7 +340,7 @@ class Mage(Tower):
         for enemy in self.game.enemies:
             effective_armor = max(enemy.armor - self.armor_pierce, 0)
             reduction = min(effective_armor, 100) / 100
-            damage = self.damage * (1 - reduction)
+            damage = self.power * (1 - reduction)
             if not enemy._alive:
                 continue
             enemy_tile_x, enemy_tile_y = self.game.screen_to_tile((enemy.x, enemy.y))
@@ -635,8 +636,8 @@ class Slacker(Tower):
             self.armor = 100.0
         else:
             self.armor = tower_data['default_armor']
-        self.damage = tower_data['default_damage'] * 0.5
-        self.normal_damage = self.damage
+        self.power = tower_data['default_damage'] * 0.5
+        self.normal_damage = self.power
         self.armor_pierce = tower_data['default_armor_pierce']
         self.range = tower_data['default_range'] * 1.2
         self.attack_speed = (tower_data['default_attack_speed'] * 2)
@@ -652,13 +653,13 @@ class Slacker(Tower):
         from gameconfig import SETTINGS
         from models.enemies import AdventurerState
         if target.state == AdventurerState.CARRYING_GOLD:
-            self.damage = self.normal_damage * 2
+            self.power = self.normal_damage * 2
             self._attack_timer = self.normal_attack_speed * 0.50
         else:
-            self.damage = self.normal_damage
+            self.power = self.normal_damage
             self._attack_timer = self.normal_attack_speed
         effective_armor = max(target.armor - self.armor_pierce, 0)
         reduction = min(effective_armor, 100) / 100
-        damage = self.damage * (1 - reduction)
+        damage = self.power * (1 - reduction)
 
         target.take_damage(damage)
