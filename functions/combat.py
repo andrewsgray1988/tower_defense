@@ -10,15 +10,20 @@ class CombatLogic:
         self._attack_timer = 0
         self._current_targets = []
         self._has_aura = False
-        self._aura_targets = None
-        self._aura_name = None
+        self._auras = []
+        self._aura_immune = False
 
     #Combat checks
     def update_combat(self, dt):
-        self._apply_aura_effects()
+        self._apply_aura_effects(dt)
         #Reduces attack timer if they've already attacked
         if self._attack_timer > 0:
             self._attack_timer -= dt
+
+        if hasattr(self, "targetable") and not self.targetable:
+            self.target_timer -= dt
+            if self.target_timer <= 0:
+                self.targetable = True
 
         self._validate_current_targets()
 
@@ -73,6 +78,8 @@ class CombatLogic:
             return False
         if hasattr(target, "_alive") and not target._alive:
             return False
+        if hasattr(target, "targetable") and not target.targetable:
+            return False
         if hasattr(target, "health") and target.health <= 0:
             return False
         return True
@@ -96,44 +103,70 @@ class CombatLogic:
     Aura Logic
     """
     #Applies aura affects from Structures with auras
-    def _apply_aura_effects(self):
+    def _apply_aura_effects(self, dt):
         if hasattr(self, "_base_move_speed"):
             self.move_speed = self._base_move_speed
         if hasattr(self, "_base_attack_speed"):
             self.attack_speed = self._base_attack_speed
         if hasattr(self, "_base_damage"):
-            self.damage = self._base_damage
+            self.power = self._base_damage
 
-        for structure in self.game.structures:
-            if not getattr(structure, "_has_aura", False):
+        aura_sources = self.game.structures + self.game.enemies
+
+        for source in aura_sources:
+            if not getattr(source, "_has_aura", False):
                 continue
 
-            if not structure._alive:
+            if not getattr(source, "_alive", True):
                 continue
 
-            if not structure._is_in_range(self):
+            if source is self:
                 continue
-            structure.apply_aura(self)
+
+            if not source._is_in_range(self):
+                continue
+            source.apply_aura(self, dt)
 
     # Aura logic
-    def apply_aura(self, unit):
-        if self._aura_targets == "Tower":
-            from models.towers import Tower
-            if not isinstance(unit, Tower):
-                return
+    def apply_aura(self, unit, dt):
+        if getattr(unit, "_aura_immune", False):
+            return
 
-        elif self._aura_targets == "Enemy":
-            from models.enemies import Enemy
-            if not isinstance(unit, Enemy):
-                return
+        for aura in self._auras:
+            target = aura["target"]
+            name = aura["name"]
 
-        match self._aura_name:
-            case "Slow":
-                unit.move_speed *= self.power
-                unit.attack_speed *= self.power
-            case "Up Damage":
-                unit.damage *= self.power
-            case "Speed":
-                unit.attack_speed /= self.power
-            case "Down Damage":
-                unit.damage /= self.power
+            if target == "Tower":
+                from models.towers import Tower
+                from models.structures import Structure
+                if not isinstance(unit, (Tower, Structure)):
+                    continue
+
+            elif target == "Enemy":
+                from models.enemies import Enemy
+                if not isinstance(unit, Enemy):
+                    continue
+
+            match name:
+                case "Slow":
+                    unit.move_speed *= self.power
+                    unit.attack_speed *= self.power
+                case "Up Damage":
+                    unit.power *= self.power
+                case "Speed":
+                    unit.attack_speed /= self.power
+                case "Down Damage":
+                    unit.power /= self.power
+                case "Heal":
+                    heal_per_second = self.power * 1.10
+                    heal_amount = heal_per_second * dt
+                    if unit.health + heal_amount >= unit.max_health:
+                        unit.health = unit.max_health
+                    else:
+                        unit.health += heal_amount
+                case "Fear":
+                    unit.attack_speed /= self._aura_power
+                case "Damage Reduction":
+                    unit.power /= self._aura_power
+                case _:
+                    return

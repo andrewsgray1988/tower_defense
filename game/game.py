@@ -7,7 +7,22 @@ import os
 import random
 
 from enum import Enum
-from models.enemies import Fighter
+from models.enemies import (
+    Fighter,
+    Barbarian,
+    Cleric,
+    Knight,
+    Monk,
+    Ninja,
+    Paladin,
+    Ranger,
+    Rogue,
+    Sorcerer,
+    Warlock,
+    Wizard,
+    Druid,
+    Bard
+)
 from functions.mapgeneration import (
     pixel_to_grid,
     grid_to_pixel
@@ -259,8 +274,34 @@ class Game:
     #Enemy Spawn cases
     def spawn_enemy(self, enemy_type):
         match enemy_type:
+            case "Barbarian":
+                enemy = Barbarian(self)
+            case "Cleric":
+                enemy = Cleric(self)
+            case "Druid":
+                enemy = Druid(self)
             case "Fighter":
                 enemy = Fighter(self)
+            case "Knight":
+                enemy = Knight(self)
+            case "Monk":
+                enemy = Monk(self)
+            case "Ninja":
+                enemy = Ninja(self)
+            case "Paladin":
+                enemy = Paladin(self)
+            case "Ranger":
+                enemy = Ranger(self)
+            case "Rogue":
+                enemy = Rogue(self)
+            case "Sorcerer":
+                enemy = Sorcerer(self)
+            case "Warlock":
+                enemy = Warlock(self)
+            case "Wizard":
+                enemy = Wizard(self)
+            case "Bard":
+                enemy = Bard(self)
             case _:
                 return
 
@@ -346,16 +387,3 @@ class Game:
             if s.col == col and s.row == row:
                 return s
         return None
-
-    """
-    Debug Features
-    """
-    #Damage or kill the earliest enemy to test damage
-    def kill_earliest_enemy(self, amount):
-        if not self.enemies:
-            return
-        enemy = self.enemies[0]
-        if amount == "full":
-            enemy.take_damage(enemy.health)
-        else:
-            enemy.take_damage(amount)

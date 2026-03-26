@@ -24,6 +24,7 @@ BUILD_MENU_BUTTON_HEIGHT = 40
 #Constant Game Settings
 MIN_ATTACK_SPEED = 0.1
 UPGRADE_MODIFIER = 1.1
+NINJA_RESPAWN = 3
 
 #Initializes if Debug should be active or not
 DEBUG_MODE = False

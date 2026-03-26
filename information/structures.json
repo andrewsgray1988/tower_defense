@@ -16,7 +16,7 @@
         "default_power_multiplier": 1.26,
         "default_upgrade_cost_multiplier": 1.15
     },
-  "Producer": {
+    "Producer": {
         "max": 1,
         "asset": "towers/Producer.png",
         "projectile_asset": "None",
@@ -33,7 +33,7 @@
         "default_power_multiplier": 1.05,
         "default_upgrade_cost_multiplier": 1.5
     },
-  "Drainer": {
+    "Drainer": {
         "max": 1,
         "asset": "towers/Drainer.png",
         "projectile_asset": "None",
@@ -50,7 +50,7 @@
         "default_power_multiplier": 1.5,
         "default_upgrade_cost_multiplier": 1.5
     },
-  "Distractor": {
+    "Distractor": {
         "max": 1,
         "asset": "towers/Distractor.png",
         "projectile_asset": "None",
@@ -67,7 +67,7 @@
         "default_power_multiplier": 1.1,
         "default_upgrade_cost_multiplier": 1.7
     },
-  "Motivator": {
+    "Motivator": {
         "max": 1,
         "asset": "towers/Motivator.png",
         "projectile_asset": "None",
@@ -84,7 +84,7 @@
         "default_power_multiplier": 1.1,
         "default_upgrade_cost_multiplier": 1.7
     },
-  "Quicker": {
+    "Quicker": {
         "max": 1,
         "asset": "towers/Quicker.png",
         "projectile_asset": "None",
@@ -101,7 +101,7 @@
         "default_power_multiplier": 1.1,
         "default_upgrade_cost_multiplier": 1.5
     },
-  "Armor": {
+    "Armor": {
         "max": 1,
         "asset": "towers/Quicker.png",
         "projectile_asset": "None",
@@ -118,7 +118,7 @@
         "default_power_multiplier": 1.1,
         "default_upgrade_cost_multiplier": 1.5
     },
-  "Defender": {
+    "Defender": {
         "max": 1,
         "asset": "towers/Quicker.png",
         "projectile_asset": "None",

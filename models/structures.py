@@ -275,8 +275,7 @@ class Distractor(Structure):
     def __init__(self, game, col, row):
         super().__init__(game, "Distractor", col, row)
         self._has_aura = True
-        self._aura_targets = "Enemy"
-        self._aura_name = "Slow"
+        self._auras = [{"name": "Slow", "target": "Enemy"}]
 
     def attack(self, targets):
         return
@@ -285,8 +284,7 @@ class Motivator(Structure):
     def __init__(self, game, col, row):
         super().__init__(game, "Motivator", col, row)
         self._has_aura = True
-        self._aura_targets = "Tower"
-        self._aura_name = "Up Damage"
+        self._auras = [{"name": "Up Damage", "target": "Tower"}]
 
     def attack(self, targets):
         return
@@ -295,15 +293,13 @@ class Quicker(Structure):
     def __init__(self, game, col, row):
         super().__init__(game, "Quicker", col, row)
         self._has_aura = True
-        self._aura_targets = "Tower"
-        self._aura_name = "Speed"
+        self._auras = [{"name": "Speed", "target": "Tower"}]
 
 class Armor(Structure):
     def __init__(self, game, col, row):
         super().__init__(game, "Armor", col, row)
         self._has_aura = True
-        self._aura_targets = "Enemy"
-        self._aura_name = "Down Damage"
+        self._auras = [{"name": "Down Damage", "target": "Enemy"}]
 
 class Defender (Structure):
     def __init__(self, game, col, row):
